@@ -8,37 +8,30 @@ import cors from 'cors';
 
 dotenv.config();
 
-/**
- * App Variables
- */
+/* App Variables */
 if (!process.env.PORT) {
   process.exit(1);
 }
 
-const PORT: number = parseInt(process.env.PORT);
+const PORT: number = parseInt(process.env.PORT, 10);
 
 const app = express();
-console.log('here');
 
-// /**
-//  *  App Configuration
-//  */
+/* App Configuration */
 
 app.use(cors());
 app.use(express.json());
+// eslint-disable-next-line no-console
 
-// /**
-//  * Server Activation
-//  */
+/* Server Activation */
 
 const server = app.listen(PORT, () => {
+  // eslint-disable-next-line no-console
   console.log(`🚀Listening on port ${PORT}`);
 });
 
-// /**
-//  * Webpack HMR Activation
-//  */
-// if (module.hot) {
-//   module.hot.accept();
-//   module.hot.dispose(() => server.close());
-// }
+/* Webpack HMR Activation */
+if (module.hot) {
+  module.hot.accept();
+  module.hot.dispose(() => server.close());
+}
