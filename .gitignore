@@ -1,0 +1,16 @@
+# dependancies
+node_modules
+
+# environment variables
+.env
+
+# vs code local settings
+
+.vscode
+
+# production directory
+dist
+build
+
+# development directory
+dev
