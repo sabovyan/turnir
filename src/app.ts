@@ -11,6 +11,10 @@ const createApp: AppFunction = () => {
   app.use(express.json());
   app.use('/api', apiRoutes);
 
+  app.get('/', (req: express.Request, res: express.Response) => {
+    res.status(200).send('test is passed');
+  });
+
   return app;
 };
 
