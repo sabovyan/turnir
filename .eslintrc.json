@@ -16,6 +16,8 @@
   },
   "plugins": ["@typescript-eslint", "prettier"],
   "rules": {
+    "no-shadow": 0,
+    "@typescript-eslint/no-shadow": ["error"],
     "prettier/prettier": [
       1,
       {

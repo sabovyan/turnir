@@ -5,16 +5,22 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon dev/index.js",
-    "predev": "rm -rf dev",
+    "predev": "rm -rf dev && prisma generate",
     "dev": "webpack --config webpack.dev.js",
     "prebuild": "eslint src/**/*.ts  --fix",
     "build": " webpack --config webpack.prod.js",
-    "lint": "eslint src/**/*.ts  --fix"
+    "lint": "eslint src/**/*.ts  --fix",
+    "p-studio": "prisma studio",
+    "p-migrate": "prisma migrate dev --create-only --name 'init' --preview-feature",
+    "prisma": "prisma migrate dev --create-only --name 'init' --preview-feature && prisma generate && prisma studio"
   },
   "keywords": [],
   "author": "sabovyan",
   "license": "ISC",
   "dependencies": {
+    "@hapi/joi": "^17.1.1",
+    "@prisma/cli": "^2.13.0",
+    "@prisma/client": "^2.13.0",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
@@ -24,6 +30,7 @@
     "@types/cors": "^2.8.9",
     "@types/dotenv": "^8.2.0",
     "@types/express": "^4.17.9",
+    "@types/hapi__joi": "^17.1.6",
     "@types/node": "^14.14.14",
     "@types/webpack-env": "^1.16.0",
     "@typescript-eslint/eslint-plugin": "^4.10.0",
