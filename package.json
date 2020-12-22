@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "dev:ts": "nodemon --exec ts-node src/index.ts",
     "start": "nodemon dev/index.js",
     "predev": "rm -rf dev && prisma generate",
     "dev": "webpack --config webpack.dev.js",
@@ -24,6 +25,7 @@
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "ts-node": "^9.1.1",
     "webpack-merge": "^5.7.2"
   },
   "devDependencies": {

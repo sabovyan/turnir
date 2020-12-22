@@ -1,21 +1,40 @@
-import express from 'express';
 import cors from 'cors';
-import apiRoutes from './Routes/Routes';
-import { AppFunction } from './types/main';
+import express, { Application, Request, Response } from 'express';
+import { Server } from 'http';
+import errorHandler from './middleware/ErrorHandler';
+import apiRouter from './User/user.route';
 
-const createApp: AppFunction = () => {
-  const app = express();
+class App {
+  app: Application;
 
-  /* App Configuration */
-  app.use(cors());
-  app.use(express.json());
-  app.use('/api', apiRoutes);
+  private port: number;
 
-  app.get('/', (req: express.Request, res: express.Response) => {
-    res.status(200).send('test is passed');
-  });
+  constructor(port: number) {
+    this.app = express();
+    this.port = port;
+  }
 
-  return app;
-};
+  getConfig(): void {
+    this.app.use(cors());
+    this.app.use(express.json());
+    this.app.use('/api', apiRouter);
+    this.app.use(errorHandler);
+  }
 
-export default createApp;
+  testStart(): void {
+    this.app.get('/', (req: Request, res: Response) => {
+      res.status(200).send('here');
+    });
+  }
+
+  start(): Server {
+    this.testStart();
+    this.getConfig();
+    return this.app.listen(this.port, () =>
+      // eslint-disable-next-line no-console
+      console.log(`🚀 listening port ${this.port}`),
+    );
+  }
+}
+
+export default App;

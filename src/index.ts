@@ -1,6 +1,6 @@
 import * as dotenv from 'dotenv';
+import App from './app';
 import PORT from './config/constants';
-import createApp from './app';
 
 dotenv.config();
 
@@ -9,12 +9,9 @@ if (!process.env.PORT) {
 }
 
 /* Server Activation */
-const app = createApp();
+const app = new App(PORT);
 
-const server = app.listen(PORT, () => {
-  // eslint-disable-next-line no-console
-  console.log(`🚀Listening on port ${PORT}`);
-});
+const server = app.start();
 
 /* Webpack HMR Activation */
 if (module.hot) {
