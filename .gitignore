@@ -14,3 +14,6 @@ build
 
 # development directory
 dev
+
+# prisma migration files
+prisma
