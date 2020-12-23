@@ -2,6 +2,7 @@ import cors from 'cors';
 import express, { Application, Request, Response } from 'express';
 import { Server } from 'http';
 import errorHandler from './middleware/ErrorHandler';
+import { sendMail } from './User/user.service';
 import apiRouter from './User/user.route';
 
 class App {
@@ -21,14 +22,20 @@ class App {
     this.app.use(errorHandler);
   }
 
-  testStart(): void {
-    this.app.get('/', (req: Request, res: Response) => {
+  testRoute(): void {
+    this.app.post('/', async (req: Request, res: Response) => {
+      await sendMail(
+        'sargis@simplytechnologies.net',
+        'sargis',
+        'https://www.google.com/',
+      );
+
       res.status(200).send('here');
     });
   }
 
   start(): Server {
-    this.testStart();
+    this.testRoute();
     this.getConfig();
     return this.app.listen(this.port, () =>
       // eslint-disable-next-line no-console

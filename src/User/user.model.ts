@@ -1,8 +1,7 @@
 import ValidationError from '../errors/ValidationError';
 import registerValidationSchema from './registerValidate.schema';
-import prisma from '../config/prismaClient';
-import RegistrationError from '../errors/registrationError';
 import { UserData } from './user.types';
+import { createUser, sendMail } from './user.service';
 
 interface UserInterface {
   validate: () => void;
@@ -29,21 +28,7 @@ class User implements UserInterface {
 
   async register(): Promise<void> {
     this.validate();
-
-    const hasUserWithEmail = await prisma.user.findUnique({
-      where: {
-        email: this.data.email,
-      },
-    });
-
-    if (hasUserWithEmail) {
-      throw new RegistrationError('😢 This email is already in use!');
-    }
-
-    const response = await prisma.user.create({
-      data: this.data,
-    });
-
+    const response = await createUser(this.data);
     this.data = response;
   }
 }

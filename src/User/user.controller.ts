@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import asyncWrapper from '../middleware/AsyncWrapper';
-import User from './user.class';
+import User from './user.model';
 
 export const registerUserWithEmail = asyncWrapper(
   async (req: Request, res: Response): Promise<void> => {
