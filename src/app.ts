@@ -2,8 +2,8 @@ import cors from 'cors';
 import express, { Application, Request, Response } from 'express';
 import { Server } from 'http';
 import errorHandler from './middleware/ErrorHandler';
-import { sendMail } from './User/user.service';
-import apiRouter from './User/user.route';
+import { sendMail } from './user/user.service';
+import apiRouter from './user/user.route';
 
 class App {
   app: Application;

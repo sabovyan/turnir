@@ -9,11 +9,12 @@ generator client {
 
 model User {
   id          Int          @id @default(autoincrement())
-  userName    String
+  displayName String
   email       String       @unique
-  password    String
+  password    String?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime?
+  verified    String       @default("not verified")
   Tournaments Tournament[]
 }
 

@@ -2,6 +2,7 @@ import ValidationError from '../errors/ValidationError';
 import registerValidationSchema from './registerValidate.schema';
 import { UserData } from './user.types';
 import { createUser, sendMail } from './user.service';
+import Token from '../config/token';
 
 interface UserInterface {
   validate: () => void;
@@ -11,11 +12,11 @@ interface UserInterface {
 class User implements UserInterface {
   data: UserData;
 
-  constructor(email: string, password: string, userName: string) {
+  constructor(email: string, password: string, displayName: string) {
     this.data = {
       email,
       password,
-      userName,
+      displayName,
     };
   }
 
@@ -28,8 +29,11 @@ class User implements UserInterface {
 
   async register(): Promise<void> {
     this.validate();
+
     const response = await createUser(this.data);
-    this.data = response;
+
+    const token = Token.create(response.displayName);
+    await sendMail('sargis@simplytechnologies.net', 'sargis', token);
   }
 }
 

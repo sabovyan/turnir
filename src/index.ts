@@ -1,6 +1,6 @@
 import * as dotenv from 'dotenv';
 import App from './app';
-import { PORT, DELETE_USERS } from './config/constants';
+import { PORT, DELETE_USERS } from './config/envConstants';
 import prisma from './config/prismaClient';
 
 dotenv.config();

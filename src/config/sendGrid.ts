@@ -1,29 +1,25 @@
-import sgMail, { MailDataRequired } from '@sendgrid/mail';
+import sgMail from '@sendgrid/mail';
+import { setMessageFunctionType } from '../user/user.types';
 import {
+  AUTH_BASE_URL,
   SENDGRID_API_KEY,
   SENDGRID_MAIL_FROM,
   SENDGRID_TEMPLATE_ID,
-} from './constants';
+} from './envConstants';
 
 sgMail.setApiKey(SENDGRID_API_KEY);
 
-type setMessageFunctionType = (
-  to: string,
-  userName: string,
-  link: string,
-) => MailDataRequired;
-
 export const setMessage: setMessageFunctionType = (
   to: string,
-  userName: string,
-  link: string,
+  displayName: string,
+  token: string,
 ) => ({
   templateId: SENDGRID_TEMPLATE_ID,
   from: SENDGRID_MAIL_FROM,
   to,
   dynamicTemplateData: {
-    userName,
-    link,
+    displayName,
+    link: `${AUTH_BASE_URL}/${token}`,
   },
 });
 
