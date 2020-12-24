@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import prisma from '../config/prismaClient';
 
 const asyncWrapper = (
-  asyncCallback: (req: Request, res: Response) => Promise<void>,
+  asyncCallback: (req: Request, res: Response) => void,
 ) => async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     await asyncCallback(req, res);

@@ -1,40 +1,34 @@
-import ValidationError from '../errors/ValidationError';
-import registerValidationSchema from './registerValidate.schema';
+/* eslint-disable class-methods-use-this */
+import { User } from '@prisma/client';
+import prisma from '../config/prismaClient';
 import { UserData } from './user.types';
-import { createUser, sendMail } from './user.service';
-import Token from '../config/token';
 
-interface UserInterface {
-  validate: () => void;
-  register: () => Promise<void>;
-}
-
-class User implements UserInterface {
-  data: UserData;
-
-  constructor(email: string, password: string, displayName: string) {
-    this.data = {
-      email,
-      password,
-      displayName,
-    };
+class UserModel {
+  static async getUserByEmail(email: string): Promise<User | null> {
+    const response = await prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+    return response;
   }
 
-  validate(): void {
-    const { error } = registerValidationSchema.validate(this.data);
-    if (error) {
-      throw new ValidationError(error.message);
-    }
+  static async createUser(data: UserData): Promise<User> {
+    const response = await prisma.user.create({
+      data,
+    });
+    return response;
   }
 
-  async register(): Promise<void> {
-    this.validate();
-
-    const response = await createUser(this.data);
-
-    const token = Token.create(response.displayName);
-    await sendMail('sargis@simplytechnologies.net', 'sargis', token);
+  static async updateUser(email: string): Promise<User> {
+    const response = await prisma.user.update({
+      where: { email },
+      data: {
+        verified: true,
+      },
+    });
+    return response;
   }
 }
 
-export default User;
+export default UserModel;

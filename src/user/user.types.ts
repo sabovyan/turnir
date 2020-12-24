@@ -2,12 +2,14 @@ import { User } from '@prisma/client';
 import { MailDataRequired } from '@sendgrid/mail';
 
 export type UserData = {
+  displayName: string;
   email: string;
   password: string;
-  displayName: string;
+  id?: number;
+  createdAt?: Date;
+  updatedAt?: Date | null;
+  verified?: boolean;
 };
-
-export type createUserType = (data: UserData) => Promise<User>;
 
 export type setMessageFunctionType = (
   to: string,

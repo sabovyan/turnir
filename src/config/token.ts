@@ -1,5 +1,12 @@
 import { Algorithm, verify, sign } from 'jsonwebtoken';
+import RegistrationError from '../errors/registrationError';
 import { JWT_SECRET } from './envConstants';
+
+type decodedObject = {
+  email: string;
+  iat: number;
+  exp: number;
+};
 
 class Token {
   private static secret: string = JWT_SECRET;
@@ -7,15 +14,18 @@ class Token {
   private static algorithm: Algorithm = 'HS256';
 
   static create(payload: string): string {
-    return sign({ id: payload }, Token.secret, {
+    return sign({ email: payload }, Token.secret, {
       expiresIn: Token.expiresIn,
       algorithm: Token.algorithm,
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  static CheckToken(token: string): string | object {
-    return verify(token, Token.secret);
+  static decode(token: string): any {
+    try {
+      return verify(token, Token.secret);
+    } catch (err) {
+      throw new RegistrationError('unauthorized request');
+    }
   }
 }
 

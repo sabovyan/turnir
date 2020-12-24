@@ -1,33 +1,51 @@
-import prisma from '../config/prismaClient';
+import { UserData } from './user.types';
+import Token from '../config/token';
 import RegistrationError from '../errors/registrationError';
-import { UserData, createUserType } from './user.types';
 import sgMail, { setMessage } from '../config/sendGrid';
-import { setCryptoPassword } from './user.utils';
+import UserModel from './user.model';
 
-export const sendMail = async (
-  to: string,
-  displayName: string,
-  token: string,
-): Promise<void> => {
-  await sgMail.send(setMessage(to, displayName, token));
-};
-
-export const createUser: createUserType = async (data: UserData) => {
-  const hasUserWithEmail = await prisma.user.findUnique({
-    where: {
-      email: data.email,
-    },
-  });
-
-  if (hasUserWithEmail) {
-    throw new RegistrationError('This email is already in use!');
+class UserService {
+  static async sendMail(
+    to: string,
+    displayName: string,
+    token: string,
+  ): Promise<void> {
+    // eslint-disable-next-line prettier/prettier
+    await sgMail.send(setMessage(to, displayName, token), false, (err) => {
+      if (err) {
+        throw new RegistrationError('Mailing error');
+      }
+    });
   }
 
-  const dataWithCryptoPassword: UserData = {
-    ...data,
-    password: setCryptoPassword(data.password),
-  };
+  static async registerNewUser(data: UserData): Promise<void> {
+    let user = await UserModel.getUserByEmail(data.email);
+    if (user && user.verified) {
+      throw new RegistrationError('this email is already registered');
+    }
 
-  const response = await prisma.user.create({ data: dataWithCryptoPassword });
-  return response;
-};
+    if (!user) {
+      user = await UserModel.createUser(data);
+    }
+
+    const token = Token.create(user.email);
+    await UserService.sendMail(user.email, user.displayName, token);
+  }
+
+  static async verifyUserEmail(token: string): Promise<void> {
+    const verified = Token.decode(token);
+    const user = await UserModel.getUserByEmail(verified.email);
+
+    if (!user) {
+      throw new RegistrationError('invalid token or email');
+    }
+
+    if (user && user.verified) {
+      throw new RegistrationError('your email is already verified');
+    }
+
+    await UserModel.updateUser(verified.email);
+  }
+}
+
+export default UserService;

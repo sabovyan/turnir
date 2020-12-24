@@ -16,9 +16,8 @@ export default class BaseError extends Error {
 }
 
 export enum ErrorName {
-  validation = '🏗VALIDATION ERROR',
-  registration = '🛠REGISTRATION ERROR',
-  authentication = 'AUTHENTICATION ERROR',
+  validation = 'VALIDATION ERROR',
+  registration = 'REGISTRATION ERROR',
   authorization = 'AUTHORIZATION ERROR',
 }
 

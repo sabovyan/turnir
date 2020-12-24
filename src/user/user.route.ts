@@ -1,9 +1,21 @@
-import { Router } from 'express';
-import { registerUserWithEmail } from './user.controller';
+import { Console } from 'console';
+import { Request, Response, Router } from 'express';
+import Token from '../config/token';
+import RegistrationError from '../errors/registrationError';
+import asyncWrapper from '../middleware/AsyncWrapper';
+import {
+  registerUserWithEmail,
+  confirmEmailRegistration,
+} from './user.controller';
+import UserModel from './user.model';
 
-const router = Router();
-const registerRoute = router.route('/register');
+const userRouter = Router();
+const registerRoute = userRouter.route('/register');
 
 registerRoute.post(registerUserWithEmail);
 
-export default router;
+const confirmationRoute = userRouter.route('/confirmation/:token');
+
+confirmationRoute.post(confirmEmailRegistration);
+
+export default userRouter;
