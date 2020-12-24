@@ -11,10 +11,10 @@ model User {
   id          Int          @id @default(autoincrement())
   displayName String
   email       String       @unique
-  password    String?
+  password    String
   createdAt   DateTime     @default(now())
   updatedAt   DateTime?
-  verified    String       @default("not verified")
+  verified    Boolean      @default(false)
   Tournaments Tournament[]
 }
 
