@@ -1,9 +1,18 @@
 /* eslint-disable class-methods-use-this */
 import { User } from '@prisma/client';
-import prisma from '../config/prismaClient';
-import { UserData } from './user.types';
+import prisma from '../../config/prismaClient';
+import { UserData } from '../auth/auth.types';
 
 class UserModel {
+  static async getUserById(id: number): Promise<User | null> {
+    const response = await prisma.user.findUnique({
+      where: {
+        id,
+      },
+    });
+    return response;
+  }
+
   static async getUserByEmail(email: string): Promise<User | null> {
     const response = await prisma.user.findUnique({
       where: {
@@ -20,11 +29,12 @@ class UserModel {
     return response;
   }
 
-  static async updateUser(email: string): Promise<User> {
+  static async updateUserById(id: number, data: any): Promise<User> {
     const response = await prisma.user.update({
-      where: { email },
+      where: { id },
       data: {
-        verified: true,
+        ...data,
+        updatedAt: new Date(),
       },
     });
     return response;

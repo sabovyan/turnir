@@ -2,31 +2,31 @@ import { Algorithm, verify, sign } from 'jsonwebtoken';
 import RegistrationError from '../errors/registrationError';
 import { JWT_SECRET } from './envConstants';
 
-type decodedObject = {
-  email: string;
-  iat: number;
-  exp: number;
-};
-
 class Token {
-  private static secret: string = JWT_SECRET;
-  private static expiresIn: string | number = '1h';
-  private static algorithm: Algorithm = 'HS256';
+  private secret: string;
+  private algorithm: Algorithm;
+  private expiresIn: string | number;
 
-  static create(payload: string): string {
-    return sign({ email: payload }, Token.secret, {
-      expiresIn: Token.expiresIn,
-      algorithm: Token.algorithm,
+  constructor(timing: string | number, algorithm: Algorithm = 'HS256') {
+    this.expiresIn = timing;
+    this.algorithm = algorithm;
+    this.secret = JWT_SECRET;
+  }
+
+  create(payload: number): string {
+    return sign({ id: payload }, this.secret, {
+      expiresIn: this.expiresIn,
+      algorithm: this.algorithm,
     });
   }
 
-  static decode(token: string): any {
+  decodeAndVerify(token: string): any {
     try {
-      return verify(token, Token.secret);
+      return verify(token, this.secret);
     } catch (err) {
       throw new RegistrationError('unauthorized request');
     }
   }
 }
 
-export default Token;
+export const verificationToken = new Token('1d');

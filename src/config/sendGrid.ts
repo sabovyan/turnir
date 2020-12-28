@@ -1,5 +1,5 @@
 import sgMail from '@sendgrid/mail';
-import { setMessageFunctionType } from '../user/user.types';
+import { setMessageFunctionType } from '../modules/auth/auth.types';
 import {
   AUTH_BASE_URL,
   SENDGRID_API_KEY,

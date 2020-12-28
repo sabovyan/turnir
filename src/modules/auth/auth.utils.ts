@@ -1,8 +1,8 @@
 import bcrypt from 'bcrypt';
-import { BCRYPT_SALT } from '../config/envConstants';
-import ValidationError from '../errors/ValidationError';
+import { BCRYPT_SALT } from '../../config/envConstants';
+import ValidationError from '../../errors/ValidationError';
 import registerValidationSchema from './registerValidate.schema';
-import { UserData } from './user.types';
+import { UserData } from './auth.types';
 
 export const setCryptoPassword = (password: string): string => {
   const salt = bcrypt.genSaltSync(Number(BCRYPT_SALT));

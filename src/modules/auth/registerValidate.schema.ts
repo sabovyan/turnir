@@ -1,8 +1,8 @@
 import joi from '@hapi/joi';
 
 const registerValidationSchema = joi.object({
-  displayName: joi.string().min(3).max(20).required(),
-  email: joi.string().email().required(),
+  displayName: joi.string().trim().min(3).max(20).required(),
+  email: joi.string().lowercase().trim().email().required(),
   password: joi
     .string()
     .min(8)
