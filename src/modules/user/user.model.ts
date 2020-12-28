@@ -34,7 +34,6 @@ class UserModel {
       where: { id },
       data: {
         ...data,
-        updatedAt: new Date(),
       },
     });
     return response;

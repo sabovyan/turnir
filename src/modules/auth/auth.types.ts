@@ -7,7 +7,7 @@ export type UserData = {
   password: string;
   id?: number;
   createdAt?: Date;
-  updatedAt?: Date | null;
+  updatedAt?: Date;
   verified?: boolean;
 };
 
