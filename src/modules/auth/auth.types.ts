@@ -9,6 +9,7 @@ export type UserData = {
   createdAt?: Date;
   updatedAt?: Date;
   verified?: boolean;
+  verificationToken?: string;
 };
 
 export type setMessageFunctionType = (

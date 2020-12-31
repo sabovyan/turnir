@@ -8,7 +8,7 @@ const errorHandler = (
   res: Response,
   next: NextFunction,
 ): void => {
-  let message = 'internal server error';
+  let message = err.message || 'internal server error';
   let code = 500;
 
   if (err instanceof BaseError) {

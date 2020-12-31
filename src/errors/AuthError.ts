@@ -1,8 +1,8 @@
 import BaseError, { ErrorName, StatusCode } from './BaseError';
 
-class RegistrationError extends BaseError {
+class AuthError extends BaseError {
   constructor(message: string) {
     super(message, ErrorName.registration, StatusCode.registration);
   }
 }
-export default RegistrationError;
+export default AuthError;

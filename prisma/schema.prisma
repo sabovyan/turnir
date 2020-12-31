@@ -8,14 +8,15 @@ generator client {
 }
 
 model User {
-  id          Int          @id @default(autoincrement())
-  displayName String
-  email       String       @unique
-  password    String
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  verified    Boolean      @default(false)
-  Tournaments Tournament[]
+  id                Int          @id @default(autoincrement())
+  displayName       String
+  email             String       @unique
+  password          String
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  verified          Boolean      @default(false)
+  verificationToken String?
+  Tournaments       Tournament[]
 }
 
 model Tournament {

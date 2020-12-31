@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import prisma from '../config/prismaClient';
+import prisma from '../database/prismaClient';
 
 const asyncWrapper = (
   asyncCallback: (req: Request, res: Response) => void,

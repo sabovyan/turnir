@@ -1,13 +1,15 @@
 import { Request, Response } from 'express';
-import RegistrationError from '../../errors/registrationError';
+import { accessToken, refreshToken } from '../../config/token';
+import AuthError from '../../errors/AuthError';
 import asyncWrapper from '../../middleware/AsyncWrapper';
+import UserModel from '../user/user.model';
 import AuthService from './auth.service';
 import { UserData } from './auth.types';
-import { validateFields } from './auth.utils';
+import { comparePassword, validateFields } from './auth.utils';
 
 export const register = asyncWrapper(
   async (req: Request, res: Response): Promise<void> => {
-    const { email, password, displayName } = req.body;
+    const { email, password, displayName } = req.body as UserData;
 
     validateFields({ email, password, displayName });
 
@@ -26,7 +28,7 @@ export const confirmEmailRegistration = asyncWrapper(
   async (req: Request, res: Response): Promise<void> => {
     const { token } = req.body;
     if (!token) {
-      throw new RegistrationError('invalid token or email');
+      throw new AuthError('invalid token or email');
     }
 
     await AuthService.verifyUserEmail(token);
@@ -52,5 +54,28 @@ export const resendRegisterEmail = asyncWrapper(
     };
 
     res.status(200).json(response);
+  },
+);
+
+export const loginWithEmail = asyncWrapper(
+  async (req: Request, res: Response) => {
+    const { email, password } = req.body;
+
+    const user = await UserModel.getUserByEmail(email);
+
+    if (!user) {
+      throw new AuthError('email is not registered');
+    }
+
+    const isPasswordCorrect = await comparePassword(password, user.password);
+
+    if (!isPasswordCorrect) {
+      throw new AuthError('your password is not correct');
+    }
+
+    const aToken = accessToken.create(user.id);
+    const rToken = refreshToken.create(user.id);
+
+    res.send('200');
   },
 );

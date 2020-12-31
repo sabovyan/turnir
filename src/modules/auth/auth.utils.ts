@@ -9,6 +9,13 @@ export const setCryptoPassword = (password: string): string => {
   return bcrypt.hashSync(password, salt);
 };
 
+export const comparePassword = (
+  password: string,
+  dbPassword: string,
+): Promise<boolean> => {
+  return bcrypt.compare(password, dbPassword);
+};
+
 export const validateFields = (data: UserData): void => {
   const { error } = registerValidationSchema.validate(data);
 

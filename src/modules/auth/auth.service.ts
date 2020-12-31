@@ -1,7 +1,7 @@
 import { User } from '@prisma/client';
 import { UserData } from './auth.types';
 import { verificationToken } from '../../config/token';
-import RegistrationError from '../../errors/registrationError';
+import AuthError from '../../errors/AuthError';
 import sgMail, { setMessage } from '../../config/sendGrid';
 import UserModel from '../user/user.model';
 import { setCryptoPassword } from './auth.utils';
@@ -10,11 +10,15 @@ type dataForVerifying = {
   verified: boolean;
 };
 
+type TokenInfo = {
+  verificationToken: string;
+};
+
 class AuthService {
   static async registerNewUser(data: UserData): Promise<void> {
     const existingUser = await UserModel.getUserByEmail(data.email);
     if (existingUser) {
-      throw new RegistrationError('this email is already registered');
+      throw new AuthError('this email is already registered');
     }
 
     const dataWithCryptedPassword: UserData = {
@@ -26,7 +30,20 @@ class AuthService {
 
     const token = verificationToken.create(newUser.id);
 
+    await AuthService.addVerificationTokenToUser(newUser.id, {
+      verificationToken: token,
+    });
+
     await AuthService.sendMail(newUser.email, newUser.displayName, token);
+  }
+
+  static async addVerificationTokenToUser(
+    id: number,
+    data: TokenInfo,
+  ): Promise<User> {
+    const user = await UserModel.updateUserById(id, data);
+
+    return user;
   }
 
   static async sendMail(
@@ -36,7 +53,7 @@ class AuthService {
   ): Promise<void> {
     await sgMail.send(setMessage(to, displayName, token), false, (err) => {
       if (err) {
-        throw new RegistrationError('Mailing error');
+        throw new AuthError('Mailing error');
       }
     });
   }
@@ -49,16 +66,19 @@ class AuthService {
   }
 
   static async verifyUserEmail(token: string): Promise<void> {
-    const verified = verificationToken.decodeAndVerify(token);
-
-    const user = await UserModel.getUserById(verified.id);
+    const decoded = verificationToken.decodeToken(token);
+    const user = await UserModel.getUserById(decoded.id);
 
     if (!user) {
-      throw new RegistrationError('invalid token or email');
+      throw new AuthError('unauthorized');
     }
 
     if (user.verified) {
-      throw new RegistrationError('your email is already verified');
+      throw new AuthError('your email is already verified');
+    }
+
+    if (token !== user.verificationToken) {
+      throw new AuthError('A wrong link is used');
     }
 
     await AuthService.updateVerificationStatus(user.id, { verified: true });
@@ -67,14 +87,18 @@ class AuthService {
   static async resendEmail(email: string): Promise<void> {
     const user = await UserModel.getUserByEmail(email);
     if (!user) {
-      throw new RegistrationError('your email is not registered');
+      throw new AuthError('your email is not registered');
     }
 
     if (user.verified) {
-      throw new RegistrationError('your email is already verified');
+      throw new AuthError('your email is already verified');
     }
 
     const token = verificationToken.create(user.id);
+
+    await AuthService.addVerificationTokenToUser(user.id, {
+      verificationToken: token,
+    });
 
     await AuthService.sendMail(user.email, user.displayName, token);
   }
