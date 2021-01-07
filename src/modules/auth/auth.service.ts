@@ -1,10 +1,14 @@
 import { User } from '@prisma/client';
 import { UserData } from './auth.types';
-import { verificationToken } from '../../config/token';
+import {
+  accessToken,
+  refreshToken,
+  verificationToken,
+} from '../../config/token';
 import AuthError from '../../errors/AuthError';
 import sgMail, { setMessage } from '../../config/sendGrid';
 import UserModel from '../user/user.model';
-import { setCryptoPassword } from './auth.utils';
+import { comparePassword, setCryptoPassword } from './auth.utils';
 
 type dataForVerifying = {
   verified: boolean;
@@ -67,19 +71,17 @@ class AuthService {
 
   static async verifyUserEmail(token: string): Promise<void> {
     const decoded = verificationToken.decodeToken(token);
+
+    if (decoded.err) throw new AuthError(decoded.err.message);
+
     const user = await UserModel.getUserById(decoded.id);
 
-    if (!user) {
-      throw new AuthError('unauthorized');
-    }
+    if (!user) throw new AuthError('unauthorized request');
 
-    if (user.verified) {
-      throw new AuthError('your email is already verified');
-    }
+    if (user.verified) throw new AuthError('your email is already verified');
 
-    if (token !== user.verificationToken) {
+    if (token !== user.verificationToken)
       throw new AuthError('A wrong link is used');
-    }
 
     await AuthService.updateVerificationStatus(user.id, { verified: true });
   }
@@ -101,6 +103,56 @@ class AuthService {
     });
 
     await AuthService.sendMail(user.email, user.displayName, token);
+  }
+
+  static async loginWithEmail(
+    email: string,
+    password: string,
+  ): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    expiresIn: string | number;
+  }> {
+    const user = await UserModel.getUserByEmail(email);
+
+    if (!user) {
+      throw new AuthError('email is not registered');
+    }
+
+    const isPasswordCorrect = await comparePassword(password, user.password);
+
+    if (!isPasswordCorrect) {
+      throw new AuthError('your password is not correct');
+    }
+
+    const aToken = accessToken.create(user.id);
+    const rToken = refreshToken.create(user.id);
+
+    return {
+      accessToken: aToken,
+      expiresIn: accessToken.expiresIn,
+      refreshToken: rToken,
+    };
+  }
+
+  static refreshAccessToken(
+    rToken: string,
+  ): {
+    accessToken: string;
+    expiresIn: string | number;
+  } {
+    const refreshPayload = refreshToken.decodeAndVerify(rToken);
+
+    if (refreshPayload.err) {
+      throw new AuthError(refreshPayload.err.message);
+    }
+
+    const aToken = accessToken.create(refreshPayload.id);
+
+    return {
+      accessToken: aToken,
+      expiresIn: accessToken.expiresIn,
+    };
   }
 }
 

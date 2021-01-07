@@ -1,11 +1,9 @@
 import { Request, Response } from 'express';
-import { accessToken, refreshToken } from '../../config/token';
 import AuthError from '../../errors/AuthError';
 import asyncWrapper from '../../middleware/AsyncWrapper';
-import UserModel from '../user/user.model';
 import AuthService from './auth.service';
 import { UserData } from './auth.types';
-import { comparePassword, validateFields } from './auth.utils';
+import { validateFields } from './auth.utils';
 
 export const register = asyncWrapper(
   async (req: Request, res: Response): Promise<void> => {
@@ -61,21 +59,33 @@ export const loginWithEmail = asyncWrapper(
   async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
-    const user = await UserModel.getUserByEmail(email);
+    const {
+      accessToken,
+      refreshToken,
+      expiresIn,
+    } = await AuthService.loginWithEmail(email, password);
 
-    if (!user) {
-      throw new AuthError('email is not registered');
-    }
+    res.cookie('refresh_token', refreshToken, {
+      maxAge: 10 * 24 * 60 * 60 * 1000,
+      httpOnly: true,
+    });
 
-    const isPasswordCorrect = await comparePassword(password, user.password);
+    res.status(200).json({
+      accessToken,
+      expiresIn,
+    });
+  },
+);
 
-    if (!isPasswordCorrect) {
-      throw new AuthError('your password is not correct');
-    }
+export const refreshAccessToken = asyncWrapper(
+  (req: Request, res: Response): void => {
+    const rToken = req.cookies.refresh_token;
 
-    const aToken = accessToken.create(user.id);
-    const rToken = refreshToken.create(user.id);
+    const { accessToken, expiresIn } = AuthService.refreshAccessToken(rToken);
 
-    res.send('200');
+    res.status(200).send({
+      accessToken,
+      expiresIn,
+    });
   },
 );
