@@ -1,17 +1,22 @@
 import { Algorithm, verify, sign, decode } from 'jsonwebtoken';
-import AuthError from '../errors/AuthError';
 import { JWT_SECRET } from './envConstants';
 
 enum duration {
   verification = '10d',
-  access = '1h',
-  refresh = '120d',
+  access = 86400000,
+  refresh = 864000000,
 }
 
-class Token {
+interface TokenInterface {
+  create(payload: number): string;
+  decodeAndVerify(token: string): any;
+  decodeToken(token: string): any;
+}
+
+class Token implements TokenInterface {
   private secret: string;
   private algorithm: Algorithm;
-  private expiresIn: string | number;
+  public expiresIn: string | number;
 
   constructor(timing: string | number, algorithm: Algorithm = 'HS256') {
     this.expiresIn = timing;
@@ -30,7 +35,7 @@ class Token {
     try {
       return verify(token, this.secret);
     } catch (err) {
-      throw new AuthError('unauthorized request');
+      return { err };
     }
   }
 
@@ -39,7 +44,7 @@ class Token {
     try {
       return decode(token);
     } catch (err) {
-      throw new AuthError('unauthorized request');
+      return { err };
     }
   }
 }
