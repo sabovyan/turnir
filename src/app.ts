@@ -17,7 +17,7 @@ class App {
   }
 
   test(): void {
-    this.app.post('/test', authenticateUser, testRoute);
+    this.app.post('/test', /* authenticateUser, */ testRoute);
     this.app.get('/test/token', testRouteWithToken);
   }
 

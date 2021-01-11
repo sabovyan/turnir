@@ -1,6 +1,6 @@
 /* eslint-disable class-methods-use-this */
 import { User } from '@prisma/client';
-import prisma from '../../database/prismaClient';
+import prisma from '../../lib/prismaClient';
 import { UserData } from '../auth/auth.types';
 
 class UserModel {

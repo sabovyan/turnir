@@ -2,10 +2,12 @@ import { Algorithm, verify, sign, decode } from 'jsonwebtoken';
 import { JWT_SECRET } from './envConstants';
 
 enum duration {
-  verification = '10d',
-  access = 86400000,
-  refresh = 864000000,
+  verification = 86400000, // 1day
+  access = 10800000, // 3hours
+  refresh = 864000000, // 10days
 }
+
+console.log(60 * 60 * 1000 * 3);
 
 interface TokenInterface {
   create(payload: number): string;
@@ -16,9 +18,9 @@ interface TokenInterface {
 class Token implements TokenInterface {
   private secret: string;
   private algorithm: Algorithm;
-  public expiresIn: string | number;
+  public expiresIn: number;
 
-  constructor(timing: string | number, algorithm: Algorithm = 'HS256') {
+  constructor(timing: number, algorithm: Algorithm = 'HS256') {
     this.expiresIn = timing;
     this.algorithm = algorithm;
     this.secret = JWT_SECRET;

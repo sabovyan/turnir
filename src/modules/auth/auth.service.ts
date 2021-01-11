@@ -9,6 +9,8 @@ import AuthError from '../../errors/AuthError';
 import sgMail, { setMessage } from '../../config/sendGrid';
 import UserModel from '../user/user.model';
 import { comparePassword, setCryptoPassword } from './auth.utils';
+import oAuth2Client from '../../lib/googleOAuth';
+import { GOOGLE_CLIENT_ID } from '../../config/envConstants';
 
 type dataForVerifying = {
   verified: boolean;
@@ -111,7 +113,7 @@ class AuthService {
   ): Promise<{
     accessToken: string;
     refreshToken: string;
-    expiresIn: string | number;
+    expiresIn: number;
   }> {
     const user = await UserModel.getUserByEmail(email);
 
@@ -128,9 +130,11 @@ class AuthService {
     const aToken = accessToken.create(user.id);
     const rToken = refreshToken.create(user.id);
 
+    const expDate = Date.now() + accessToken.expiresIn;
+
     return {
       accessToken: aToken,
-      expiresIn: accessToken.expiresIn,
+      expiresIn: expDate,
       refreshToken: rToken,
     };
   }
@@ -149,10 +153,43 @@ class AuthService {
 
     const aToken = accessToken.create(refreshPayload.id);
 
+    const expDate = Date.now() + accessToken.expiresIn;
+
     return {
       accessToken: aToken,
-      expiresIn: accessToken.expiresIn,
+      expiresIn: expDate,
     };
+  }
+
+  static async authenticateWithGoogle(token: string): Promise<User> {
+    const ticket = await oAuth2Client.verifyIdToken({
+      idToken: token,
+      audience: GOOGLE_CLIENT_ID,
+    });
+
+    const { name, email } = ticket.getPayload()!;
+
+    if (!email || !name) {
+      throw new AuthError('Bad Request');
+    }
+
+    const existingUser = await UserModel.getUserByEmail(email);
+
+    if (existingUser) {
+      return existingUser;
+    }
+
+    /* ANCHOR TODO Change keep test123 in .env */
+    const password = Buffer.from('test123', 'base64');
+
+    const user = await UserModel.createUser({
+      email,
+      password: password.toString(),
+      displayName: name,
+      verified: true,
+    });
+
+    return user;
   }
 }
 

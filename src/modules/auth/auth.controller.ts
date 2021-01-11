@@ -89,3 +89,18 @@ export const refreshAccessToken = asyncWrapper(
     });
   },
 );
+
+export const googleSignIn = asyncWrapper(
+  async (req: Request, res: Response): Promise<void> => {
+    const { token } = req.body;
+
+    const user = await AuthService.authenticateWithGoogle(token);
+
+    const response = {
+      status: 'success',
+      data: user,
+    };
+
+    res.status(200).json(response);
+  },
+);
