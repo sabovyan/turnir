@@ -10,7 +10,7 @@ import sgMail, { setMessage } from '../../config/sendGrid';
 import UserModel from '../user/user.model';
 import { comparePassword, setCryptoPassword } from './auth.utils';
 import oAuth2Client from '../../lib/googleOAuth';
-import { GOOGLE_CLIENT_ID } from '../../config/envConstants';
+import { FAKE_PASS, GOOGLE_CLIENT_ID } from '../../config/envConstants';
 
 type dataForVerifying = {
   verified: boolean;
@@ -168,24 +168,30 @@ class AuthService {
     });
 
     const { name, email } = ticket.getPayload()!;
+    const googleId = ticket.getUserId();
 
-    if (!email || !name) {
-      throw new AuthError('Bad Request');
+    if (!email || !name || !googleId) {
+      throw new AuthError('missing fields');
     }
 
     const existingUser = await UserModel.getUserByEmail(email);
 
     if (existingUser) {
+      if (!existingUser.googleId) {
+        UserModel.updateUserById(existingUser.id, { googleId });
+      }
       return existingUser;
     }
 
-    /* ANCHOR TODO Change keep test123 in .env */
-    const password = Buffer.from('test123', 'base64');
+    const password = setCryptoPassword(
+      Buffer.from(FAKE_PASS, 'base64').toString(),
+    );
 
     const user = await UserModel.createUser({
       email,
       password: password.toString(),
       displayName: name,
+      googleId,
       verified: true,
     });
 

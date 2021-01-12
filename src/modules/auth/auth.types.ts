@@ -1,4 +1,3 @@
-import { User } from '@prisma/client';
 import { MailDataRequired } from '@sendgrid/mail';
 
 export type UserData = {
@@ -10,6 +9,8 @@ export type UserData = {
   updatedAt?: Date;
   verified?: boolean;
   verificationToken?: string;
+  googleId?: string;
+  facebookId?: string;
 };
 
 export type setMessageFunctionType = (

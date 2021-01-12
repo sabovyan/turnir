@@ -14,3 +14,5 @@ export const AUTH_BASE_URL = process.env.AUTH_BASE_URL!;
 
 export const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID!;
 export const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET!;
+
+export const FAKE_PASS = process.env.FAKE_PASS!;

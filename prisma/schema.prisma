@@ -16,6 +16,8 @@ model User {
   updatedAt         DateTime     @updatedAt
   verified          Boolean      @default(false)
   verificationToken String?
+  googleId          String?
+  facebookId        String?
   Tournaments       Tournament[]
 }
 

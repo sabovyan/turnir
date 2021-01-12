@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { accessToken, refreshToken } from '../../config/token';
 import AuthError from '../../errors/AuthError';
 import asyncWrapper from '../../middleware/AsyncWrapper';
 import AuthService from './auth.service';
@@ -96,9 +97,17 @@ export const googleSignIn = asyncWrapper(
 
     const user = await AuthService.authenticateWithGoogle(token);
 
+    const aToken = accessToken.create(user.id);
+    const expDate = Date.now() + accessToken.expiresIn;
+    const rToken = refreshToken.create(user.id);
+
     const response = {
       status: 'success',
-      data: user,
+      data: {
+        accessToken: aToken,
+        expiry: expDate,
+        refreshToken: rToken,
+      },
     };
 
     res.status(200).json(response);
