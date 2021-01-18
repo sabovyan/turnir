@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import { MailDataRequired } from '@sendgrid/mail';
 
 export type UserData = {
@@ -18,3 +19,60 @@ export type setMessageFunctionType = (
   displayName: string,
   link: string,
 ) => MailDataRequired;
+
+export type LoginResponse = {
+  accessToken: string;
+  refreshToken: string;
+  expiry: number;
+};
+
+export type RequestDataForGoogleLogin = {
+  googleId: string;
+  imageUrl: string;
+  email: string;
+  name: string;
+  givenName: string;
+  familyName: string;
+  tokenId: string;
+};
+
+export type RequestDataForFacebookLogin = {
+  accessToken: string;
+  data_access_expiration_time: number;
+  email: string;
+  expiresIn: number;
+  graphDomain: 'facebook';
+  id: string;
+  name: string;
+  signedRequest: string;
+  userID: string;
+};
+
+export interface ISocialAccountLogin<T> {
+  login: (data: T) => Promise<LoginResponse>;
+}
+
+export type scope = 'email' | 'public_profile';
+
+export type DataFromFacebookGraphApi = {
+  app_id: string;
+  type: 'USER';
+  application: string;
+  data_access_expires_at: number;
+  expires_at: number;
+  is_valid: boolean;
+  scopes: scope | scope[];
+  user_id: string;
+};
+
+export type FacebookError = {
+  message: string;
+  type: string;
+  code: number;
+  fbtrace_id: string;
+};
+
+export interface IResponseBodyFromGraphApi {
+  data: DataFromFacebookGraphApi;
+  error: FacebookError;
+}

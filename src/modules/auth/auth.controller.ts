@@ -1,10 +1,14 @@
 import { Request, Response } from 'express';
-import { accessToken, refreshToken } from '../../config/token';
-import AuthError from '../../errors/AuthError';
 import asyncWrapper from '../../middleware/AsyncWrapper';
-import AuthService from './auth.service';
-import { UserData } from './auth.types';
-import { validateFields } from './auth.utils';
+import localAuthService from './localAuth.service';
+import {
+  RequestDataForFacebookLogin,
+  RequestDataForGoogleLogin,
+  UserData,
+} from './auth.types';
+import { getNewAccessTokenWithExpiry, validateFields } from './auth.utils';
+import facebookAuth from './facebookAuth.service';
+import googleAuth from './googleAuth.service';
 
 export const register = asyncWrapper(
   async (req: Request, res: Response): Promise<void> => {
@@ -12,11 +16,14 @@ export const register = asyncWrapper(
 
     validateFields({ email, password, displayName });
 
-    await AuthService.registerNewUser({ email, password, displayName });
+    await localAuthService.register({
+      email: email.toLowerCase(),
+      password,
+      displayName,
+    });
 
     const response = {
-      success: true,
-      data: { name: displayName, email },
+      message: 'email is sent',
     };
 
     res.status(200).json(response);
@@ -26,14 +33,10 @@ export const register = asyncWrapper(
 export const confirmEmailRegistration = asyncWrapper(
   async (req: Request, res: Response): Promise<void> => {
     const { token } = req.body;
-    if (!token) {
-      throw new AuthError('invalid token or email');
-    }
 
-    await AuthService.verifyUserEmail(token);
+    await localAuthService.verifyUserEmail(token);
 
     const response = {
-      success: true,
       message: 'verification is done',
     };
 
@@ -45,10 +48,9 @@ export const resendRegisterEmail = asyncWrapper(
   async (req: Request, res: Response) => {
     const { email } = req.body as UserData;
 
-    AuthService.resendEmail(email);
+    localAuthService.resendEmail(email);
 
     const response = {
-      success: true,
       message: 'email is sent',
     };
 
@@ -60,21 +62,10 @@ export const loginWithEmail = asyncWrapper(
   async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
-    const {
-      accessToken,
-      refreshToken,
-      expiresIn,
-    } = await AuthService.loginWithEmail(email, password);
+    const tokens = await localAuthService.loginWithEmail(email, password);
+    /* ANCHOR place it back to response json */
 
-    res.cookie('refresh_token', refreshToken, {
-      maxAge: 10 * 24 * 60 * 60 * 1000,
-      httpOnly: true,
-    });
-
-    res.status(200).json({
-      accessToken,
-      expiresIn,
-    });
+    res.status(200).json(tokens);
   },
 );
 
@@ -82,34 +73,30 @@ export const refreshAccessToken = asyncWrapper(
   (req: Request, res: Response): void => {
     const rToken = req.cookies.refresh_token;
 
-    const { accessToken, expiresIn } = AuthService.refreshAccessToken(rToken);
+    /* ANCHOR who is responsible for refreshing access tokens */
 
-    res.status(200).send({
-      accessToken,
-      expiresIn,
-    });
+    const accessTokenWithExpiry = getNewAccessTokenWithExpiry(rToken);
+
+    res.status(200).send(accessTokenWithExpiry);
   },
 );
 
 export const googleSignIn = asyncWrapper(
   async (req: Request, res: Response): Promise<void> => {
-    const { token } = req.body;
+    const data: RequestDataForGoogleLogin = req.body;
 
-    const user = await AuthService.authenticateWithGoogle(token);
+    const tokens = await googleAuth.login(data);
 
-    const aToken = accessToken.create(user.id);
-    const expDate = Date.now() + accessToken.expiresIn;
-    const rToken = refreshToken.create(user.id);
+    res.status(200).json(tokens);
+  },
+);
 
-    const response = {
-      status: 'success',
-      data: {
-        accessToken: aToken,
-        expiry: expDate,
-        refreshToken: rToken,
-      },
-    };
+export const facebookSignIn = asyncWrapper(
+  async (req: Request, res: Response) => {
+    const data = req.body as RequestDataForFacebookLogin;
 
-    res.status(200).json(response);
+    const tokens = await facebookAuth.login(data);
+
+    res.status(200).json(tokens);
   },
 );

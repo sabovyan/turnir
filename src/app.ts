@@ -17,8 +17,8 @@ class App {
   }
 
   test(): void {
-    this.app.post('/test', /* authenticateUser, */ testRoute);
-    this.app.get('/test/token', testRouteWithToken);
+    this.app.get('/test', authenticateUser, testRoute);
+    this.app.get('/test', testRouteWithToken);
   }
 
   setConfig(): void {

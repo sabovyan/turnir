@@ -7,8 +7,6 @@ enum duration {
   refresh = 864000000, // 10days
 }
 
-console.log(60 * 60 * 1000 * 3);
-
 interface TokenInterface {
   create(payload: number): string;
   decodeAndVerify(token: string): any;
