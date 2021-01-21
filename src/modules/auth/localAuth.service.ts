@@ -1,5 +1,10 @@
 import { User } from '@prisma/client';
-import { LoginResponse, UserData } from './auth.types';
+import {
+  ChangePasswordData,
+  LoginResponse,
+  ResponseUser,
+  UserData,
+} from './auth.types';
 import { verificationToken } from '../../config/token';
 import AuthError from '../../errors/AuthError';
 import sgMail, { setMessage } from '../../config/sendGrid';
@@ -8,6 +13,7 @@ import {
   comparePassword,
   getAccessAndRefreshTokens,
   setCryptoPassword,
+  setResponseUser,
 } from './auth.utils';
 
 type dataForVerifying = {
@@ -112,14 +118,35 @@ class LocalAuthService {
 
     const isPasswordCorrect = await comparePassword(password, user.password);
 
-    if (!isPasswordCorrect) throw new AuthError('your password is not correct');
+    if (!isPasswordCorrect) throw new AuthError('Your password is not correct');
 
     const tokens = getAccessAndRefreshTokens(user.id);
 
-    return { ...tokens, user };
+    const userForResponse: ResponseUser = setResponseUser(user);
+
+    return { ...tokens, user: userForResponse };
   }
 
-  async changePassword() {}
+  // eslint-disable-next-line class-methods-use-this
+  async changePassword(data: ChangePasswordData) {
+    if (!data) throw new AuthError('Data is not provided');
+
+    const { id, oldPassword, newPassword } = data;
+    const user = await UserModel.getUserById(id);
+
+    if (!user) throw new AuthError('unauthorized Request');
+
+    const isPasswordCorrect = await comparePassword(oldPassword, user.password);
+
+    if (!isPasswordCorrect)
+      throw new AuthError('Your old password is not correct');
+
+    const hashedPassword = setCryptoPassword(newPassword);
+
+    await UserModel.updateUserById(user.id, {
+      password: hashedPassword,
+    });
+  }
 }
 
 const localAuthService = new LocalAuthService();

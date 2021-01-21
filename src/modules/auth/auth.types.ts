@@ -27,11 +27,19 @@ export type Tokens = {
   expiry: number;
 };
 
+export type ResponseUser = {
+  googleId: string | null;
+  email: string;
+  id: number;
+  displayName: string;
+  facebookId: string | null;
+};
+
 export type LoginResponse = {
   accessToken: string;
   refreshToken: string;
   expiry: number;
-  user: User;
+  user: ResponseUser;
 };
 
 export type RequestDataForGoogleLogin = {
@@ -84,3 +92,9 @@ export interface IResponseBodyFromGraphApi {
   data: DataFromFacebookGraphApi;
   error: FacebookError;
 }
+
+export type ChangePasswordData = {
+  id: number;
+  oldPassword: string;
+  newPassword: string;
+};

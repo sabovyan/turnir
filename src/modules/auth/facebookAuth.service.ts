@@ -7,8 +7,13 @@ import {
   ISocialAccountLogin,
   LoginResponse,
   RequestDataForFacebookLogin,
+  ResponseUser,
 } from './auth.types';
-import { getAccessAndRefreshTokens, setCryptoPassword } from './auth.utils';
+import {
+  getAccessAndRefreshTokens,
+  setCryptoPassword,
+  setResponseUser,
+} from './auth.utils';
 
 class FacebookAuth implements ISocialAccountLogin<RequestDataForFacebookLogin> {
   debugURL: string;
@@ -39,6 +44,9 @@ class FacebookAuth implements ISocialAccountLogin<RequestDataForFacebookLogin> {
   async login(data: RequestDataForFacebookLogin): Promise<LoginResponse> {
     const { id, accessToken: token, name, email } = data;
 
+    if (!email)
+      throw new Error('Your facebook account is not register with email');
+
     this.debugToken(token);
 
     let user = await UserModel.getUserByEmail(email);
@@ -64,7 +72,9 @@ class FacebookAuth implements ISocialAccountLogin<RequestDataForFacebookLogin> {
 
     const tokens = getAccessAndRefreshTokens(user.id);
 
-    return { ...tokens, user };
+    const userForResponse: ResponseUser = setResponseUser(user);
+
+    return { ...tokens, user: userForResponse };
   }
 }
 

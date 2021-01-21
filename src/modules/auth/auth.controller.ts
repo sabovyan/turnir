@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import asyncWrapper from '../../middleware/AsyncWrapper';
 import localAuthService from './localAuth.service';
 import {
+  ChangePasswordData,
   RequestDataForFacebookLogin,
   RequestDataForGoogleLogin,
   UserData,
@@ -107,5 +108,15 @@ export const autoLogin = asyncWrapper(
     const user = await sharedAuthService.autoLogin(token);
 
     res.status(200).json(user);
+  },
+);
+
+export const updatePasswordByUserId = asyncWrapper(
+  async (req: Request, res: Response): Promise<void> => {
+    const data = req.body as ChangePasswordData;
+
+    await localAuthService.changePassword(data);
+
+    res.status(200).send('Your password is changed');
   },
 );

@@ -2,9 +2,10 @@ import bcrypt from 'bcrypt';
 import { BCRYPT_SALT } from '../../config/envConstants';
 import ValidationError from '../../errors/ValidationError';
 import registerValidationSchema from './registerValidate.schema';
-import { LoginResponse, Tokens, UserData } from './auth.types';
+import { LoginResponse, ResponseUser, Tokens, UserData } from './auth.types';
 import { accessToken, refreshToken } from '../../config/token';
 import AuthError from '../../errors/AuthError';
+import { User } from '@prisma/client';
 
 export const setCryptoPassword = (password: string): string => {
   const salt = bcrypt.genSaltSync(Number(BCRYPT_SALT));
@@ -62,4 +63,16 @@ export const getNewAccessTokenWithExpiry = (
     accessToken: aToken,
     expiry,
   };
+};
+
+export const setResponseUser = (user: User): ResponseUser => {
+  const { displayName, email, facebookId, googleId, id } = user;
+  const userForResponse: ResponseUser = {
+    displayName,
+    email,
+    facebookId,
+    googleId,
+    id,
+  };
+  return userForResponse;
 };

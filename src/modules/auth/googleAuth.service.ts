@@ -7,8 +7,13 @@ import {
   ISocialAccountLogin,
   LoginResponse,
   RequestDataForGoogleLogin,
+  ResponseUser,
 } from './auth.types';
-import { getAccessAndRefreshTokens, setCryptoPassword } from './auth.utils';
+import {
+  getAccessAndRefreshTokens,
+  setCryptoPassword,
+  setResponseUser,
+} from './auth.utils';
 
 class GoogleAuth implements ISocialAccountLogin<RequestDataForGoogleLogin> {
   private audience: string;
@@ -54,9 +59,11 @@ class GoogleAuth implements ISocialAccountLogin<RequestDataForGoogleLogin> {
       });
     }
 
+    const userForResponse: ResponseUser = setResponseUser(user);
+
     const tokens = getAccessAndRefreshTokens(user.id);
 
-    return { ...tokens, user };
+    return { ...tokens, user: userForResponse };
   }
 }
 

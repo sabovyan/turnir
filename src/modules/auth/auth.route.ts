@@ -9,6 +9,7 @@ import {
   googleSignIn,
   facebookSignIn,
   autoLogin,
+  updatePasswordByUserId,
 } from './auth.controller';
 
 const authRouter = Router();
@@ -24,6 +25,8 @@ authRouter.route('/email/login').post(loginWithEmail);
 authRouter.route('/auto-login').post(autoLogin);
 
 authRouter.route('/email/refreshToken').post(refreshAccessToken);
+
+authRouter.route('/email/update-password').put(updatePasswordByUserId);
 
 authRouter.route('/google').post(googleSignIn);
 
