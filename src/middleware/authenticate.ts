@@ -16,7 +16,7 @@ const authenticateUser = (
   const bearer = authorization.split(' ');
   const aToken = bearer[1];
 
-  const accessPayload = accessToken.decodeAndVerify(aToken);
+  // const accessPayload = accessToken.decodeAndVerify(aToken);
 
   if (accessPayload.err) {
     throw new AuthError(accessPayload.err.message);

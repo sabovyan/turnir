@@ -21,7 +21,7 @@ type TokenInfo = {
 class LocalAuthService {
   async register(data: UserData): Promise<User> {
     const existingUser = await UserModel.getUserByEmail(data.email);
-    if (existingUser) throw new AuthError('this email is already registered');
+    if (existingUser) throw new AuthError('This email is already registered');
 
     const dataWithCryptedPassword: UserData = {
       ...data,
@@ -66,15 +66,19 @@ class LocalAuthService {
   }
 
   async verifyUserEmail(token: string): Promise<void> {
-    if (!token) throw new AuthError('invalid token or email');
+    if (!token) throw new AuthError('Invalid token or email');
 
-    const decoded = verificationToken.decodeToken(token);
+    const decoded = verificationToken.decodeAndVerify(token);
+
+    if (decoded === null || decoded === undefined)
+      throw new AuthError('Invalid Token');
+
     if (decoded.err) throw new AuthError(decoded.err.message);
 
     const user = await UserModel.getUserById(decoded.id);
-    if (!user) throw new AuthError('unauthorized request');
+    if (!user) throw new AuthError('Unauthorized request');
 
-    if (user.verified) throw new AuthError('your email is already verified');
+    if (user.verified) throw new AuthError('The email was already registered');
 
     if (token !== user.verificationToken)
       throw new AuthError('A wrong link is used');
@@ -85,8 +89,8 @@ class LocalAuthService {
   async resendEmail(email: string): Promise<void> {
     const user = await UserModel.getUserByEmail(email);
 
-    if (!user) throw new AuthError('your email is not registered');
-    if (user.verified) throw new AuthError('your email is already verified');
+    if (!user) throw new AuthError('Email is not registered');
+    if (user.verified) throw new AuthError('The email was already registered');
 
     const token = verificationToken.create(user.id);
 
@@ -104,7 +108,7 @@ class LocalAuthService {
   ): Promise<LoginResponse> {
     const user = await UserModel.getUserByEmail(email);
 
-    if (!user) throw new AuthError('email is not registered');
+    if (!user) throw new AuthError('Email is not registered');
 
     const isPasswordCorrect = await comparePassword(password, user.password);
 
@@ -112,8 +116,10 @@ class LocalAuthService {
 
     const tokens = getAccessAndRefreshTokens(user.id);
 
-    return tokens;
+    return { ...tokens, user };
   }
+
+  async changePassword() {}
 }
 
 const localAuthService = new LocalAuthService();

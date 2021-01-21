@@ -10,7 +10,7 @@ export const SENDGRID_TEMPLATE_ID: string = process.env.SENDGRID_TEMPLATE_ID!;
 
 export const BCRYPT_SALT: string = process.env.BCRYPT_SALT!;
 export const JWT_SECRET: string = process.env.JWT_SECRET!;
-export const AUTH_BASE_URL = process.env.AUTH_BASE_URL!;
+export const AUTH_VERIFICATION_URL = process.env.AUTH_VERIFICATION_URL!;
 
 export const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID!;
 export const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET!;

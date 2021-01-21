@@ -64,7 +64,7 @@ class FacebookAuth implements ISocialAccountLogin<RequestDataForFacebookLogin> {
 
     const tokens = getAccessAndRefreshTokens(user.id);
 
-    return tokens;
+    return { ...tokens, user };
   }
 }
 

@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import { BCRYPT_SALT } from '../../config/envConstants';
 import ValidationError from '../../errors/ValidationError';
 import registerValidationSchema from './registerValidate.schema';
-import { LoginResponse, UserData } from './auth.types';
+import { LoginResponse, Tokens, UserData } from './auth.types';
 import { accessToken, refreshToken } from '../../config/token';
 import AuthError from '../../errors/AuthError';
 
@@ -27,11 +27,11 @@ export const validateFields = (data: UserData): void => {
   }
 };
 
-export const getAccessAndRefreshTokens = (id: number): LoginResponse => {
+export const getAccessAndRefreshTokens = (id: number): Tokens => {
   const aToken = accessToken.create(id);
   const rToken = refreshToken.create(id);
 
-  const expDate = Date.now() + accessToken.expiresIn;
+  const expDate = Date.now() + accessToken.expiresIn * 1000;
 
   return {
     accessToken: aToken,
@@ -56,7 +56,7 @@ export const getNewAccessTokenWithExpiry = (
 
   const aToken = accessToken.create(refreshPayload.id);
 
-  const expiry = Date.now() + accessToken.expiresIn;
+  const expiry = Date.now() + accessToken.expiresIn * 1000;
 
   return {
     accessToken: aToken,

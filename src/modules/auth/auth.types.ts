@@ -1,4 +1,5 @@
 /* eslint-disable camelcase */
+import { User } from '@prisma/client';
 import { MailDataRequired } from '@sendgrid/mail';
 
 export type UserData = {
@@ -20,10 +21,17 @@ export type setMessageFunctionType = (
   link: string,
 ) => MailDataRequired;
 
+export type Tokens = {
+  accessToken: string;
+  refreshToken: string;
+  expiry: number;
+};
+
 export type LoginResponse = {
   accessToken: string;
   refreshToken: string;
   expiry: number;
+  user: User;
 };
 
 export type RequestDataForGoogleLogin = {

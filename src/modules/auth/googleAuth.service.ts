@@ -56,7 +56,7 @@ class GoogleAuth implements ISocialAccountLogin<RequestDataForGoogleLogin> {
 
     const tokens = getAccessAndRefreshTokens(user.id);
 
-    return tokens;
+    return { ...tokens, user };
   }
 }
 

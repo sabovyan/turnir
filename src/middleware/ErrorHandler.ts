@@ -17,7 +17,6 @@ const errorHandler = (
   }
 
   const response = {
-    success: false,
     error: message,
   };
 

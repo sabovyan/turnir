@@ -1,10 +1,11 @@
 import { Algorithm, verify, sign, decode } from 'jsonwebtoken';
+import AuthError from '../errors/AuthError';
 import { JWT_SECRET } from './envConstants';
 
 enum duration {
-  verification = 86400000, // 1day
-  access = 10800000, // 3hours
-  refresh = 864000000, // 10days
+  verification = 60 * 60 * 24, // 1day 60 * 60 * 24
+  access = 3 * 60, //  <- 3min,
+  refresh = 10 * 60 * 60 * 24, // 10days
 }
 
 interface TokenInterface {
