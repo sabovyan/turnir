@@ -15,12 +15,6 @@ export type UserData = {
   facebookId?: string;
 };
 
-export type setMessageFunctionType = (
-  to: string,
-  displayName: string,
-  link: string,
-) => MailDataRequired;
-
 export type Tokens = {
   accessToken: string;
   refreshToken: string;
@@ -97,4 +91,13 @@ export type ChangePasswordData = {
   id: number;
   oldPassword: string;
   newPassword: string;
+};
+
+export type ResetPassword = {
+  email: string;
+};
+
+export type setNewPassWordData = {
+  password: string;
+  token: string;
 };

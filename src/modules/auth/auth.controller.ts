@@ -6,23 +6,31 @@ import {
   RequestDataForFacebookLogin,
   RequestDataForGoogleLogin,
   UserData,
+  ResetPassword,
+  setNewPassWordData,
 } from './auth.types';
 import { getNewAccessTokenWithExpiry, validateFields } from './auth.utils';
 import facebookAuth from './facebookAuth.service';
 import googleAuth from './googleAuth.service';
 import sharedAuthService from './auth.service';
+import { Language } from '../../lang/lang';
 
 export const register = asyncWrapper(
   async (req: Request, res: Response): Promise<void> => {
     const { email, password, displayName } = req.body as UserData;
 
+    const lang = req.query.lang as Language;
+
     validateFields({ email, password, displayName });
 
-    await localAuthService.register({
-      email: email.toLowerCase().trim(),
-      password,
-      displayName: displayName.trim(),
-    });
+    await localAuthService.register(
+      {
+        email: email.toLowerCase().trim(),
+        password,
+        displayName: displayName.trim(),
+      },
+      lang,
+    );
 
     const response = {
       message: 'Email is sent',
@@ -49,8 +57,9 @@ export const confirmEmailRegistration = asyncWrapper(
 export const resendRegisterEmail = asyncWrapper(
   async (req: Request, res: Response) => {
     const { email } = req.body as UserData;
+    const lang = req.query.lang as Language;
 
-    await localAuthService.resendEmail(email);
+    await localAuthService.resendEmail(email, lang);
 
     const response = {
       message: 'Another Email is sent',
@@ -65,7 +74,6 @@ export const loginWithEmail = asyncWrapper(
     const { email, password } = req.body;
 
     const response = await localAuthService.loginWithEmail(email, password);
-    /* ANCHOR place it back to response json */
 
     res.status(200).json(response);
   },
@@ -74,7 +82,6 @@ export const loginWithEmail = asyncWrapper(
 export const refreshAccessToken = asyncWrapper(
   (req: Request, res: Response): void => {
     const rToken = req.body.token;
-    // console.log(rToken);
 
     const accessTokenWithExpiry = getNewAccessTokenWithExpiry(rToken);
 
@@ -118,5 +125,25 @@ export const updatePasswordByUserId = asyncWrapper(
     await localAuthService.changePassword(data);
 
     res.status(200).send('Your password is changed');
+  },
+);
+export const resetPassword = asyncWrapper(
+  async (req: Request, res: Response): Promise<void> => {
+    const data = req.body as ResetPassword;
+
+    const lang = req.query.lang as Language;
+    await localAuthService.resetPassword(data, lang);
+
+    res.status(200).send('Email is sent');
+  },
+);
+
+export const confirmNewPassword = asyncWrapper(
+  async (req: Request, res: Response): Promise<void> => {
+    const data: setNewPassWordData = req.body;
+
+    await localAuthService.confirmNewPassword(data);
+
+    res.status(200).send('Your New Password is confirmed');
   },
 );

@@ -1,11 +1,13 @@
 import bcrypt from 'bcrypt';
+import { User } from '@prisma/client';
 import { BCRYPT_SALT } from '../../config/envConstants';
 import ValidationError from '../../errors/ValidationError';
-import registerValidationSchema from './registerValidate.schema';
-import { LoginResponse, ResponseUser, Tokens, UserData } from './auth.types';
+import registerValidationSchema, {
+  passwordValidateSchema,
+} from './registerValidate.schema';
+import { ResponseUser, Tokens, UserData } from './auth.types';
 import { accessToken, refreshToken } from '../../config/token';
 import AuthError from '../../errors/AuthError';
-import { User } from '@prisma/client';
 
 export const setCryptoPassword = (password: string): string => {
   const salt = bcrypt.genSaltSync(Number(BCRYPT_SALT));
@@ -22,6 +24,13 @@ export const comparePassword = (
 export const validateFields = (data: UserData): void => {
   const { error } = registerValidationSchema.validate(data);
 
+  if (error) {
+    const name = error.details[0].context?.label;
+    throw new ValidationError(`${name} is not valid`);
+  }
+};
+export const validatePassword = (password: string): void => {
+  const { error } = passwordValidateSchema.validate({ password });
   if (error) {
     const name = error.details[0].context?.label;
     throw new ValidationError(`${name} is not valid`);

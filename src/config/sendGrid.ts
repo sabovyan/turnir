@@ -1,25 +1,56 @@
-import sgMail from '@sendgrid/mail';
-import { setMessageFunctionType } from '../modules/auth/auth.types';
+import sgMail, { MailDataRequired } from '@sendgrid/mail';
 import {
+  AUTH_RESET_URL,
   AUTH_VERIFICATION_URL,
   SENDGRID_API_KEY,
   SENDGRID_MAIL_FROM,
+  SENDGRID_RESET_TEMPLATE_ID,
   SENDGRID_TEMPLATE_ID,
 } from './envConstants';
 
 sgMail.setApiKey(SENDGRID_API_KEY);
 
+export type setMessageFunctionType = (
+  to: string,
+  header: string,
+  token: string,
+  message: string,
+  buttonText: string,
+) => MailDataRequired;
+
 export const setMessage: setMessageFunctionType = (
   to: string,
-  displayName: string,
+  header: string,
   token: string,
+  message: string,
+  buttonText: string,
 ) => ({
   templateId: SENDGRID_TEMPLATE_ID,
   from: SENDGRID_MAIL_FROM,
   to,
   dynamicTemplateData: {
-    displayName,
+    header,
+    message,
+    buttonText,
     link: `${AUTH_VERIFICATION_URL}/${token}`,
+  },
+});
+
+export const setResetPasswordMessage = (
+  to: string,
+  header: string,
+  buttonText: string,
+  token: string,
+  message: string,
+): MailDataRequired => ({
+  templateId: SENDGRID_RESET_TEMPLATE_ID,
+  from: SENDGRID_MAIL_FROM,
+  to,
+  dynamicTemplateData: {
+    header,
+    buttonText,
+    link: `${AUTH_RESET_URL}/${token}`,
+    message,
   },
 });
 

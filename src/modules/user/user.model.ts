@@ -38,6 +38,18 @@ class UserModel {
     });
     return response;
   }
+  static async updateUserVerificationTokenByEmail(
+    email: string,
+    token: string,
+  ): Promise<User> {
+    const response = await prisma.user.update({
+      where: { email },
+      data: {
+        verificationToken: token,
+      },
+    });
+    return response;
+  }
 }
 
 export default UserModel;

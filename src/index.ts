@@ -1,6 +1,7 @@
 import App from './app';
 import { PORT, DELETE_USERS } from './config/envConstants';
 import prisma from './lib/prismaClient';
+import UserModel from './modules/user/user.model';
 
 (async () => {
   if (DELETE_USERS === 'true') {

@@ -2,19 +2,27 @@ import { User } from '@prisma/client';
 import {
   ChangePasswordData,
   LoginResponse,
+  ResetPassword,
   ResponseUser,
+  setNewPassWordData,
   UserData,
 } from './auth.types';
 import { verificationToken } from '../../config/token';
 import AuthError from '../../errors/AuthError';
-import sgMail, { setMessage } from '../../config/sendGrid';
+import sgMail, {
+  setMessage,
+  setResetPasswordMessage,
+} from '../../config/sendGrid';
 import UserModel from '../user/user.model';
 import {
   comparePassword,
   getAccessAndRefreshTokens,
   setCryptoPassword,
   setResponseUser,
+  validatePassword,
 } from './auth.utils';
+import { getLanguage, Language } from '../../lang/lang';
+import { FAKE_PASS } from '../../config/envConstants';
 
 type dataForVerifying = {
   verified: boolean;
@@ -25,7 +33,7 @@ type TokenInfo = {
 };
 
 class LocalAuthService {
-  async register(data: UserData): Promise<User> {
+  async register(data: UserData, lang: Language): Promise<User> {
     const existingUser = await UserModel.getUserByEmail(data.email);
     if (existingUser) throw new AuthError('This email is already registered');
 
@@ -42,7 +50,14 @@ class LocalAuthService {
       verificationToken: token,
     });
 
-    await this.sendMail(newUser.email, newUser.displayName, token);
+    const language = getLanguage(lang);
+
+    const to = newUser.email;
+    const header = `${language.header} ${newUser.displayName}`;
+    const { verifyButtonText } = language;
+    const { verifyMessage } = language;
+
+    await this.sendMail(to, header, verifyMessage, token, verifyButtonText);
 
     return newUser;
   }
@@ -56,14 +71,20 @@ class LocalAuthService {
   // eslint-disable-next-line class-methods-use-this
   async sendMail(
     to: string,
-    displayName: string,
+    header: string,
+    message: string,
     token: string,
+    buttonText: string,
   ): Promise<void> {
-    await sgMail.send(setMessage(to, displayName, token), false, (err) => {
-      if (err) {
-        throw new AuthError('Mailing error');
-      }
-    });
+    await sgMail.send(
+      setMessage(to, header, token, message, buttonText),
+      false,
+      (err) => {
+        if (err) {
+          throw new AuthError('Mailing error');
+        }
+      },
+    );
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -92,7 +113,7 @@ class LocalAuthService {
     await this.updateVerificationStatus(user.id, { verified: true });
   }
 
-  async resendEmail(email: string): Promise<void> {
+  async resendEmail(email: string, lang: Language): Promise<void> {
     const user = await UserModel.getUserByEmail(email);
 
     if (!user) throw new AuthError('Email is not registered');
@@ -104,7 +125,14 @@ class LocalAuthService {
       verificationToken: token,
     });
 
-    await this.sendMail(user.email, user.displayName, token);
+    const language = getLanguage(lang);
+
+    const to = user.email;
+    const header = `${language.header} ${user.displayName}`;
+    const { verifyButtonText } = language;
+    const { verifyMessage } = language;
+
+    await this.sendMail(to, header, verifyMessage, token, verifyButtonText);
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -115,6 +143,9 @@ class LocalAuthService {
     const user = await UserModel.getUserByEmail(email);
 
     if (!user) throw new AuthError('Email is not registered');
+    console.log(password);
+
+    if (!user.verified) throw new Error('your account is not verified');
 
     const isPasswordCorrect = await comparePassword(password, user.password);
 
@@ -141,11 +172,85 @@ class LocalAuthService {
     if (!isPasswordCorrect)
       throw new AuthError('Your old password is not correct');
 
+    validatePassword(newPassword);
+
     const hashedPassword = setCryptoPassword(newPassword);
 
     await UserModel.updateUserById(user.id, {
       password: hashedPassword,
     });
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  async resetPassword(data: ResetPassword, lang: Language) {
+    if (!data) throw new AuthError('Data is not provided');
+
+    const { email } = data;
+
+    const user = await UserModel.getUserByEmail(email);
+
+    if (!user) throw new AuthError('unauthorized Request');
+
+    if (
+      user.googleId ||
+      (user.facebookId && comparePassword(FAKE_PASS, user.password))
+    ) {
+      throw new AuthError('you are not able to change password');
+    }
+
+    if (new Date().getTime() - new Date(user.updatedAt).getTime() < 10 * 1000) {
+      throw new AuthError('it is prohibited to send several mails at once');
+    }
+
+    const language = getLanguage(lang);
+
+    const to = user.email;
+    const header = `${language.header} ${user.displayName}`;
+    const { buttonText } = language;
+    const { message } = language;
+
+    const token = verificationToken.create(user.id);
+
+    await UserModel.updateUserVerificationTokenByEmail(email, token);
+
+    await this.sendResetMail(to, header, buttonText, token, message);
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  async sendResetMail(
+    to: string,
+    header: string,
+    buttonText: string,
+    token: string,
+    message: string,
+  ) {
+    await sgMail.send(
+      setResetPasswordMessage(to, header, buttonText, token, message),
+      false,
+      (err) => {
+        if (err) {
+          throw new AuthError('Mailing error');
+        }
+      },
+    );
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  async confirmNewPassword(data: setNewPassWordData) {
+    const { password, token } = data;
+    if (!password || !token) throw new AuthError('Unauthorized Request');
+
+    validatePassword(password);
+
+    const payload = await verificationToken.decodeAndVerify(token);
+
+    console.log(payload.id);
+
+    const hashedPassword = setCryptoPassword(password);
+
+    if (payload.err) throw new AuthError('Unauthorized Request');
+
+    await UserModel.updateUserById(payload.id, { password: hashedPassword });
   }
 }
 

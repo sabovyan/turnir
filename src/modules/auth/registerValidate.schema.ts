@@ -15,4 +15,17 @@ const registerValidationSchema = joi.object({
     .required(),
 });
 
+export const passwordValidateSchema = joi.object({
+  password: joi
+    .string()
+    .min(8)
+    .max(20)
+    .pattern(
+      new RegExp(
+        '^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$',
+      ),
+    )
+    .required(),
+});
+
 export default registerValidationSchema;
