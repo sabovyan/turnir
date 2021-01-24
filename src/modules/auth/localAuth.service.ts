@@ -143,9 +143,8 @@ class LocalAuthService {
     const user = await UserModel.getUserByEmail(email);
 
     if (!user) throw new AuthError('Email is not registered');
-    console.log(password);
 
-    if (!user.verified) throw new Error('your account is not verified');
+    if (!user.verified) throw new AuthError('your account is not verified');
 
     const isPasswordCorrect = await comparePassword(password, user.password);
 
@@ -189,7 +188,7 @@ class LocalAuthService {
 
     const user = await UserModel.getUserByEmail(email);
 
-    if (!user) throw new AuthError('unauthorized Request');
+    if (!user) throw new AuthError('Unauthorized Request');
 
     if (
       user.googleId ||
@@ -243,8 +242,6 @@ class LocalAuthService {
     validatePassword(password);
 
     const payload = await verificationToken.decodeAndVerify(token);
-
-    console.log(payload.id);
 
     const hashedPassword = setCryptoPassword(password);
 

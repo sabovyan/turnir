@@ -134,7 +134,7 @@ export const resetPassword = asyncWrapper(
     const lang = req.query.lang as Language;
     await localAuthService.resetPassword(data, lang);
 
-    res.status(200).send('Email is sent');
+    res.status(200).send('The email is sent. please check out your inbox');
   },
 );
 
