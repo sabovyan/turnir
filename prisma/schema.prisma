@@ -18,15 +18,50 @@ model User {
   verificationToken String?
   googleId          String?
   facebookId        String?
-  Tournaments       Tournament[]
+  tournament        Tournament[]
 }
 
 model Tournament {
-  id        Int      @id @default(autoincrement())
-  type      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime
+  id               Int            @id @default(autoincrement())
+  goalsToWin       Int?
+  winningSets      Int
+  players          Player[]
+  User             User        @relation(fields: [userId], references: [id])
+  userId           Int
+  tournamentType   TournamentType @relation(fields: [tournamentTypeId], references: [id])
+  tournamentTypeId Int
+  games            Game[]
+}
 
-  User   User? @relation(fields: [userId], references: [id])
-  userId Int?
+model TournamentType {
+  id          Int          @id @default(autoincrement())
+  name        String
+  description String
+  tournament  Tournament[]
+}
+
+model Player {
+  id           Int        @id @default(autoincrement())
+  name         String
+  tournament   Tournament @relation(fields: [tournamentId], references: [id])
+  tournamentId Int
+  score        Score[]
+
+}
+
+model Game {
+  id           Int        @id @default(autoincrement())
+  tournament   Tournament @relation(fields: [tournamentId], references: [id])
+  tournamentId Int
+  score        Score[]
+  index        Float
+}
+
+model Score {
+  id       Int    @id @default(autoincrement())
+  game     Game   @relation(fields: [gameId], references: [id])
+  gameId   Int
+  player   Player @relation(fields: [playerId], references: [id])
+  playerId Int
+  point    Int?
 }

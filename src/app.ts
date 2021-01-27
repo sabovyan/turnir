@@ -6,6 +6,7 @@ import authenticateUser from './middleware/authenticate';
 import errorHandler from './middleware/ErrorHandler';
 import authRouter from './modules/auth/auth.route';
 import testRoute, { testRouteWithToken } from './test/test.controller';
+import tournamentRouter from './modules/tournament/tournament.route';
 
 class App {
   app: Application;
@@ -16,16 +17,11 @@ class App {
     this.port = port;
   }
 
-  test(): void {
-    this.app.get('/test', /* authenticateUser, */ testRoute);
-    this.app.get('/test/so', testRouteWithToken);
-  }
-
   setConfig(): void {
     this.app.use(cors());
     this.app.use(express.json());
     this.app.use(cookieParser());
-    this.test();
+    this.app.use('/api/tournament', tournamentRouter);
     this.app.use('/api/auth', authRouter);
     this.app.use(errorHandler);
   }
