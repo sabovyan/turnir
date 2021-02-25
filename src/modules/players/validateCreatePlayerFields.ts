@@ -1,10 +1,15 @@
 import BadRequestError from '../../errors/BadRequestError';
 import checkIfPlayerNameExists from '../../utils/checkIfPlayerNameExists';
+import checkIsEmptyString from '../../utils/checkIsEmplyString';
 import checkUserExitsById from '../../utils/checkUserExitsById';
 import { CreatePlayerProps } from './player.type';
 
-export const validateCreatePlayerFields = async (data: CreatePlayerProps) => {
-  if (data.name.trim() === '') {
+export const validateCreatePlayerFields = async (
+  data: CreatePlayerProps,
+): Promise<void> => {
+  const isEmptyName = checkIsEmptyString(data.name);
+
+  if (isEmptyName) {
     throw new BadRequestError('name is required');
   }
 
@@ -23,6 +28,6 @@ export const validateCreatePlayerFields = async (data: CreatePlayerProps) => {
   );
 
   if (nameExistsWithCurrentUser) {
-    throw new BadRequestError('Player with this name already exists');
+    throw new BadRequestError('The player already exists');
   }
 };

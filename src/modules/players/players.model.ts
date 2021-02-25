@@ -1,26 +1,26 @@
 import { Player, Prisma } from '@prisma/client';
 import prisma from '../../lib/prismaClient';
-import { CreatePlayerProps } from './player.type';
+import { CreatePlayerProps, UpdatePlayerRequest } from './player.type';
 
 export interface IPlayerModel {
   createNewPlayer: (data: CreatePlayerProps) => Promise<Player>;
   getAllPlayers: (userId: number) => Promise<Player[]>;
   getPlayerByName: (userId: number, name: string) => Promise<Player | null>;
+  deletePlayerById: (playerId: number) => Promise<Player>;
+  updatePlayerName: (data: UpdatePlayerRequest) => Promise<Player>;
   // get: () => {};
   // update: () => {};
-  // delete: () => {};
   // deleteAll: () => {};
 }
 
 class PlayerModel implements IPlayerModel {
-  model: Prisma.PlayerDelegate;
+  instance: Prisma.PlayerDelegate;
   constructor() {
-    this.model = prisma.player;
+    this.instance = prisma.player;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   async createNewPlayer({ name, userId }: CreatePlayerProps): Promise<Player> {
-    const player = await prisma.player.create({
+    const player = await this.instance.create({
       data: {
         name,
         User: {
@@ -34,9 +34,8 @@ class PlayerModel implements IPlayerModel {
     return player;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   async getAllPlayers(userId: number) {
-    const players = await prisma.player.findMany({
+    const players = await this.instance.findMany({
       where: {
         userId,
       },
@@ -46,12 +45,35 @@ class PlayerModel implements IPlayerModel {
   }
 
   async getPlayerByName(userId: number, name: string) {
-    const player = await this.model.findFirst({
+    const player = await this.instance.findFirst({
       where: {
         name,
         userId,
       },
     });
+    return player;
+  }
+
+  async deletePlayerById(id: number) {
+    const response = this.instance.delete({
+      where: {
+        id,
+      },
+    });
+
+    return response;
+  }
+
+  async updatePlayerName({ id, name }: UpdatePlayerRequest) {
+    const player = await this.instance.update({
+      where: {
+        id,
+      },
+      data: {
+        name,
+      },
+    });
+
     return player;
   }
 }
