@@ -1,14 +1,19 @@
+/* eslint-disable camelcase */
 /* eslint-disable class-methods-use-this */
-import { Tournament } from '@prisma/client';
+import { Game, Player, Prisma, Tournament } from '@prisma/client';
 import prisma from '../../lib/prismaClient';
-import tournamentRouter from './tournament.route';
 
 interface ITournament {
-  getTournaments: (userId: number) => Promise<Tournament[]>;
-  getTournament: (tournamentId: number) => Promise<Tournament | null>;
-  createTournament: (
-    data: Tournament,
-    tournamentTypeId: number,
+  getAll: (userId: number) => Promise<Tournament[]>;
+  get: (tournamentId: number) => Promise<Tournament | null>;
+  getTournamentWithPlayersAndGames: (
+    tournamentId: number,
+  ) => Promise<
+    Prisma.Prisma__TournamentClient<(Tournament & { players: Player[] }) | null>
+  >;
+  createTournamentWithPlayers: (
+    data: Omit<Tournament, 'id'>,
+    players: Omit<Player, 'id'>[],
   ) => Promise<Tournament>;
   // updateTournament: () => Promise<Tournament>;
   // deleteTournament: () => Promise<Tournament>;
@@ -17,7 +22,7 @@ interface ITournament {
 
 class TournamentModel implements ITournament {
   // eslint-disable-next-line class-methods-use-this
-  async getTournaments(userId: number): Promise<Tournament[]> {
+  async getAll(userId: number): Promise<Tournament[]> {
     const tournaments = await prisma.tournament.findMany({
       where: {
         userId,
@@ -27,7 +32,7 @@ class TournamentModel implements ITournament {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  async getTournament(tournamentId: number): Promise<Tournament | null> {
+  async get(tournamentId: number): Promise<Tournament | null> {
     const tournament = prisma.tournament.findUnique({
       where: {
         id: tournamentId,
@@ -36,13 +41,14 @@ class TournamentModel implements ITournament {
     return tournament;
   }
 
-  async createTournament(
-    data: Tournament,
-    tournamentTypeId: number,
+  async createTournamentWithPlayers(
+    data: Omit<Tournament, 'id'>,
+    players: Omit<Player, 'id'>[],
   ): Promise<Tournament> {
     const tournament = await prisma.tournament.create({
       data: {
-        ...data,
+        winningSets: data.winningSets,
+        goalsToWin: data.goalsToWin,
         User: {
           connect: {
             id: data.userId,
@@ -50,9 +56,37 @@ class TournamentModel implements ITournament {
         },
         tournamentType: {
           connect: {
-            id: tournamentTypeId,
+            id: data.tournamentTypeId,
           },
         },
+        // players: {
+        //   create: players.map((pl) => ({ name: pl.name })),
+        // },
+      },
+    });
+
+    return tournament;
+  }
+
+  async getTournamentWithPlayersAndGames(
+    tournamentId: number,
+    // eslint-disable-next-line camelcase
+  ): Promise<
+    Prisma.Prisma__TournamentClient<
+      (Tournament & { players: Player[] } & { games: Game[] }) | null
+    >
+  > {
+    const tournament = await prisma.tournament.findUnique({
+      where: {
+        id: tournamentId,
+      },
+      include: {
+        players: {
+          include: {
+            score: true,
+          },
+        },
+        games: true,
       },
     });
 
@@ -62,4 +96,6 @@ class TournamentModel implements ITournament {
   // deleteTournament: () => Promise<Tournament>;
 }
 
-export default TournamentModel;
+const tournamentModel = new TournamentModel();
+
+export default tournamentModel;

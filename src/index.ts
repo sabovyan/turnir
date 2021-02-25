@@ -1,11 +1,22 @@
 import App from './app';
-import { PORT, DELETE_USERS } from './config/envConstants';
+import { PORT, DELETE_USERS, FRESH_START } from './config/envConstants';
 import prisma from './lib/prismaClient';
-import UserModel from './modules/user/user.model';
 
 (async () => {
   if (DELETE_USERS === 'true') {
     await prisma.user.deleteMany();
+  }
+})();
+
+(async () => {
+  if (FRESH_START === 'yes') {
+    await prisma.user.deleteMany();
+    await prisma.player.deleteMany();
+    await prisma.game.deleteMany();
+    await prisma.playerGroup.deleteMany();
+    await prisma.score.deleteMany();
+    await prisma.tournament.deleteMany();
+    await prisma.tournamentType.deleteMany();
   }
 })();
 

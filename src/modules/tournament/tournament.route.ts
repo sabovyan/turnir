@@ -1,11 +1,16 @@
-import { Request, Response, Router } from 'express';
+import { Router } from 'express';
 import authenticateUser from '../../middleware/authenticate';
-import { getTournaments } from './tournament.controller';
+import {
+  createTournament,
+  getTournamentWithPlayersAndGames,
+} from './tournament.controller';
 
 const tournamentRouter = Router();
 
-tournamentRouter.use(authenticateUser);
+// tournamentRouter.use(authenticateUser);
 
-tournamentRouter.route('/').get(getTournaments);
+tournamentRouter.route('/').post(createTournament);
+
+tournamentRouter.route('/:id').get(getTournamentWithPlayersAndGames);
 
 export default tournamentRouter;

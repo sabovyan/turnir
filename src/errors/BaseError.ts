@@ -19,6 +19,7 @@ export enum ErrorName {
   validation = 'VALIDATION ERROR',
   registration = 'REGISTRATION ERROR',
   authorization = 'AUTHORIZATION ERROR',
+  badRequest = 'BAD REQUEST',
 }
 
 export enum StatusCode {
@@ -26,4 +27,5 @@ export enum StatusCode {
   validation = 400,
   registration = 401,
   authorization = 403,
+  badRequest = 400,
 }

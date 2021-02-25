@@ -23,7 +23,6 @@ const testRoute = asyncWrapper(
 
 export const testRouteWithToken = asyncWrapper(
   (req: Request, res: Response): void => {
-    console.log(req.cookies);
     res.end();
   },
 );

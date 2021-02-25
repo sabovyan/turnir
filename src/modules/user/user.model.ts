@@ -24,7 +24,9 @@ class UserModel {
 
   static async createUser(data: UserData): Promise<User> {
     const response = await prisma.user.create({
-      data,
+      data: {
+        ...data,
+      },
     });
     return response;
   }

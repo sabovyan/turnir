@@ -8,17 +8,19 @@ generator client {
 }
 
 model User {
-  id                Int          @id @default(autoincrement())
+  id                Int           @id @default(autoincrement())
   displayName       String
-  email             String       @unique
+  email             String        @unique
   password          String
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
-  verified          Boolean      @default(false)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  verified          Boolean       @default(false)
   verificationToken String?
   googleId          String?
   facebookId        String?
   tournament        Tournament[]
+  player            Player[]
+  PlayerGroup       PlayerGroup[]
 }
 
 model Tournament {
@@ -26,7 +28,7 @@ model Tournament {
   goalsToWin       Int?
   winningSets      Int
   players          Player[]
-  User             User        @relation(fields: [userId], references: [id])
+  User             User           @relation(fields: [userId], references: [id])
   userId           Int
   tournamentType   TournamentType @relation(fields: [tournamentTypeId], references: [id])
   tournamentTypeId Int
@@ -41,12 +43,23 @@ model TournamentType {
 }
 
 model Player {
-  id           Int        @id @default(autoincrement())
-  name         String
-  tournament   Tournament @relation(fields: [tournamentId], references: [id])
-  tournamentId Int
-  score        Score[]
+  id            Int           @id @default(autoincrement())
+  name          String
+  tournament    Tournament?   @relation(fields: [tournamentId], references: [id])
+  tournamentId  Int?
+  score         Score[]
+  User          User          @relation(fields: [userId], references: [id])
+  userId        Int
+  playersGroups PlayerGroup[]
 
+}
+
+model PlayerGroup {
+  id      Int      @id @default(autoincrement())
+  name    String   @unique
+  User    User     @relation(fields: [userId], references: [id])
+  userId  Int
+  players Player[]
 }
 
 model Game {
@@ -54,7 +67,7 @@ model Game {
   tournament   Tournament @relation(fields: [tournamentId], references: [id])
   tournamentId Int
   score        Score[]
-  index        Float
+  index        Float?
 }
 
 model Score {

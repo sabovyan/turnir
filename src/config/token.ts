@@ -4,7 +4,7 @@ import { JWT_SECRET } from './envConstants';
 
 enum duration {
   verification = 60 * 60 * 24, // 1day 60 * 60 * 24
-  access = 5 * 60, //  <- 3min,
+  access = 10 * 60, //  <- 10min,
   refresh = 10 * 60 * 60 * 24, // 10days
 }
 

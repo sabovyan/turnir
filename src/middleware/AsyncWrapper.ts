@@ -10,6 +10,7 @@ const asyncWrapper = (
     next();
   } catch (err) {
     next(err);
+    console.log(err.message);
   } finally {
     prisma.$disconnect();
   }
