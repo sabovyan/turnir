@@ -9,6 +9,7 @@ import testRoute, { testRouteWithToken } from './test/test.controller';
 import tournamentRouter from './modules/tournament/tournament.route';
 import playersRouter from './modules/players/players.route';
 import playerGroupRouter from './modules/playerGroups/playerGroup.route';
+import userRouter from './modules/user/user.route';
 
 class App {
   app: Application;
@@ -27,6 +28,7 @@ class App {
     this.app.use('/api/auth', authRouter);
     this.app.use('/api/players', playersRouter);
     this.app.use('/api/playerGroup', playerGroupRouter);
+    this.app.use('/api/user', userRouter);
     this.app.use(errorHandler);
   }
 
@@ -34,7 +36,7 @@ class App {
     this.setConfig();
     return this.app.listen(this.port, () =>
       // eslint-disable-next-line no-console
-      console.log(`🚀 listening port ${this.port}`),
+      console.log('\x1b[33m%s\x1b[0m', `🚀 listening port ${this.port}`),
     );
   }
 }

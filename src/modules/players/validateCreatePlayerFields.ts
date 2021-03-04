@@ -4,7 +4,7 @@ import checkIsEmptyString from '../../utils/checkIsEmplyString';
 import checkUserExitsById from '../../utils/checkUserExitsById';
 import { CreatePlayerProps } from './player.type';
 
-export const validateCreatePlayerFields = async (
+const validateCreatePlayerFields = async (
   data: CreatePlayerProps,
 ): Promise<void> => {
   const isEmptyName = checkIsEmptyString(data.name);
@@ -31,3 +31,5 @@ export const validateCreatePlayerFields = async (
     throw new BadRequestError('The player already exists');
   }
 };
+
+export default validateCreatePlayerFields;

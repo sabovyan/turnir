@@ -38,7 +38,7 @@ model Tournament {
 model TournamentType {
   id          Int          @id @default(autoincrement())
   name        String
-  description String
+  description String?
   tournament  Tournament[]
 }
 

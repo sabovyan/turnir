@@ -1,15 +1,15 @@
 import { Request, Response } from 'express';
-import BadRequestError from '../../errors/BadRequestError';
+
 import asyncWrapper from '../../middleware/AsyncWrapper';
-import checkIsEmptyString from '../../utils/checkIsEmplyString';
-import isStringNumeric from '../../utils/isStringNumeric';
+import { updatePlayerGroupRequest } from './player.type';
+
 import playersService from './players.service';
 
 export const getAllPlayers = asyncWrapper(
   async (req: Request, res: Response) => {
     const { userId } = req.body;
 
-    const players = await playersService.getPlayers(userId);
+    const players = await playersService.getAllPlayers(userId);
     res.status(200).json(players);
   },
 );
@@ -39,6 +39,19 @@ export const updatePlayerName = asyncWrapper(
     const { id, name, userId } = req.body;
 
     const player = await playersService.updatePlayerName({ id, name, userId });
+
+    res.status(200).json(player);
+  },
+);
+
+export const updatePlayerGroup = asyncWrapper(
+  async (req: Request, res: Response) => {
+    const { groupId, playerId } = req.body as updatePlayerGroupRequest;
+
+    const player = await playersService.updatePlayerGroup({
+      groupId,
+      playerId,
+    });
 
     res.status(200).json(player);
   },

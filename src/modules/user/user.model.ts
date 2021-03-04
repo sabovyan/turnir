@@ -1,5 +1,5 @@
 /* eslint-disable class-methods-use-this */
-import { User } from '@prisma/client';
+import { Player, PlayerGroup, User } from '@prisma/client';
 import prisma from '../../lib/prismaClient';
 import { UserData } from '../auth/auth.types';
 
@@ -50,6 +50,29 @@ class UserModel {
         verificationToken: token,
       },
     });
+    return response;
+  }
+
+  static async getAllPlayersAndGroupsByUserId(
+    userId: number,
+  ): Promise<{
+    PlayerGroup: PlayerGroup[];
+    player: Player[];
+  } | null> {
+    const response = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        PlayerGroup: {
+          include: {
+            players: true,
+          },
+        },
+        player: true,
+      },
+    });
+
     return response;
   }
 }

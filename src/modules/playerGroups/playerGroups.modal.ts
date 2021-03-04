@@ -1,7 +1,14 @@
 import { Player, PlayerGroup } from '@prisma/client';
+import { isThisTypeNode } from 'typescript';
 import prisma from '../../lib/prismaClient';
+import {
+  DisconnectPlayersRequest,
+  UpdateGroupNameRequest,
+  UpdateManyPlayersOfGroupRequest,
+  updateOnePlayersConnectionToAGroupRequest,
+} from './group.type';
 
-interface IPlayerGroupModal {
+export interface IPlayerGroupModal {
   createNewGroup: (data: {
     name: string;
     userId: number;
@@ -16,8 +23,29 @@ interface IPlayerGroupModal {
       })
     | null
   >;
+  deleteGroupById: (groupId: number) => Promise<PlayerGroup | null>;
+  updateGroupNameById: ({
+    groupId,
+    userId,
+    name,
+  }: UpdateGroupNameRequest) => Promise<
+    | (PlayerGroup & {
+        players: Player[];
+      })
+    | null
+  >;
+
+  updateManyPlayersConnectionInGroup: (
+    data: UpdateManyPlayersOfGroupRequest,
+  ) => Promise<PlayerGroup>;
+  updateOnePlayersConnectionToGroup: (
+    data: updateOnePlayersConnectionToAGroupRequest,
+  ) => Promise<PlayerGroup>;
+  disconnectPlayerById: (
+    data: DisconnectPlayersRequest,
+  ) => Promise<PlayerGroup>;
+
   // update: () => {};
-  // delete: () => {};
   // deleteAll: () => {};
 }
 
@@ -32,6 +60,9 @@ class PlayerGroupsModel implements IPlayerGroupModal {
             id: data.userId,
           },
         },
+      },
+      include: {
+        players: true,
       },
     });
 
@@ -57,6 +88,102 @@ class PlayerGroupsModel implements IPlayerGroupModal {
     const group = await prisma.playerGroup.findUnique({
       where: {
         id,
+      },
+      include: {
+        players: true,
+      },
+    });
+
+    return group;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  async deleteGroupById(id: number) {
+    const group = await prisma.playerGroup.delete({
+      where: {
+        id,
+      },
+    });
+
+    return group;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  async updateGroupNameById({ groupId, name }: UpdateGroupNameRequest) {
+    const group = await prisma.playerGroup.update({
+      where: {
+        id: groupId,
+      },
+      data: {
+        name,
+      },
+
+      include: {
+        players: true,
+      },
+    });
+
+    return group;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  async updateManyPlayersConnectionInGroup({
+    groupId,
+    playerIds,
+  }: UpdateManyPlayersOfGroupRequest) {
+    const group = await prisma.playerGroup.update({
+      where: {
+        id: groupId,
+      },
+      data: {
+        players: {
+          connect: playerIds,
+        },
+      },
+      include: {
+        players: true,
+      },
+    });
+
+    return group;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  async updateOnePlayersConnectionToGroup(
+    data: updateOnePlayersConnectionToAGroupRequest,
+  ) {
+    const group = await prisma.playerGroup.update({
+      where: {
+        id: data.groupId,
+      },
+
+      data: {
+        players: {
+          connect: {
+            id: data.playerId,
+          },
+        },
+      },
+      include: {
+        players: true,
+      },
+    });
+
+    return group;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  async disconnectPlayerById({ groupId, playerId }: DisconnectPlayersRequest) {
+    const group = await prisma.playerGroup.update({
+      where: {
+        id: groupId,
+      },
+      data: {
+        players: {
+          disconnect: {
+            id: playerId,
+          },
+        },
       },
       include: {
         players: true,

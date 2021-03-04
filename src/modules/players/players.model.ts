@@ -1,6 +1,10 @@
 import { Player, Prisma } from '@prisma/client';
 import prisma from '../../lib/prismaClient';
-import { CreatePlayerProps, UpdatePlayerRequest } from './player.type';
+import {
+  CreatePlayerProps,
+  updatePlayerGroupRequest,
+  UpdatePlayerRequest,
+} from './player.type';
 
 export interface IPlayerModel {
   createNewPlayer: (data: CreatePlayerProps) => Promise<Player>;
@@ -8,13 +12,15 @@ export interface IPlayerModel {
   getPlayerByName: (userId: number, name: string) => Promise<Player | null>;
   deletePlayerById: (playerId: number) => Promise<Player>;
   updatePlayerName: (data: UpdatePlayerRequest) => Promise<Player>;
+  updatePlayerGroup: (data: updatePlayerGroupRequest) => Promise<Player>;
   // get: () => {};
   // update: () => {};
   // deleteAll: () => {};
 }
 
 class PlayerModel implements IPlayerModel {
-  instance: Prisma.PlayerDelegate;
+  instance: Prisma.PlayerDelegate<false>;
+
   constructor() {
     this.instance = prisma.player;
   }
@@ -71,6 +77,27 @@ class PlayerModel implements IPlayerModel {
       },
       data: {
         name,
+      },
+    });
+
+    return player;
+  }
+
+  async updatePlayerGroup({ groupId, playerId }: updatePlayerGroupRequest) {
+    const player = await this.instance.update({
+      where: {
+        id: playerId,
+      },
+
+      data: {
+        playersGroups: {
+          connect: {
+            id: groupId,
+          },
+        },
+      },
+      include: {
+        playersGroups: true,
       },
     });
 

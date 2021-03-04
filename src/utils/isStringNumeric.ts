@@ -1,3 +1,3 @@
-const isStringNumeric = (str: string): boolean => Number.isNaN(Number(str));
+const isStringNumeric = (str: string): boolean => !!Number(str);
 
 export default isStringNumeric;

@@ -5,6 +5,7 @@ import {
   createNewPlayer,
   deletePlayerById,
   updatePlayerName,
+  updatePlayerGroup,
 } from './players.controller';
 
 const playersRouter = Router();
@@ -17,5 +18,6 @@ playersRouter
   .post(createNewPlayer)
   .put(updatePlayerName);
 playersRouter.route('/:id').delete(deletePlayerById);
+playersRouter.route('/updateGroup').post(updatePlayerGroup);
 
 export default playersRouter;
