@@ -1,5 +1,0 @@
--- AddForeignKey
-ALTER TABLE "Game" ADD FOREIGN KEY ("participant1Ids") REFERENCES "Player"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Game" ADD FOREIGN KEY ("participant2Ids") REFERENCES "Player"("id") ON DELETE SET NULL ON UPDATE CASCADE;
