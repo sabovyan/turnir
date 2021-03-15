@@ -1,6 +1,6 @@
-import { Player, PlayerGroup } from '@prisma/client';
+import { Group, Player } from '@prisma/client';
 import BadRequestError from '../../errors/BadRequestError';
-import prisma from '../../lib/prismaClient';
+
 import isStringNumeric from '../../utils/isStringNumeric';
 import UserModel from './user.model';
 
@@ -8,12 +8,12 @@ interface IUserInterface {
   getAllGroupsAndPlayers: (
     id: string,
   ) => Promise<{
-    PlayerGroup: PlayerGroup[];
+    group: Group[];
     player: Player[];
   } | null>;
 }
 
-class UserService {
+class UserService implements IUserInterface {
   // eslint-disable-next-line class-methods-use-this
   async getAllGroupsAndPlayers(id: string) {
     if (!isStringNumeric(id)) throw new BadRequestError('wrong credentials');

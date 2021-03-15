@@ -1,4 +1,4 @@
-import { Player, PlayerGroup } from '@prisma/client';
+import { Player, Group } from '@prisma/client';
 import BadRequestError from '../../errors/BadRequestError';
 import isStringNumeric from '../../utils/isStringNumeric';
 import {
@@ -12,28 +12,25 @@ import {
   validateFieldsForDisconnect,
   validateGroupNameUpdateFields,
 } from './group.utils';
-import playerGroupModal, { IPlayerGroupModal } from './playerGroups.modal';
+import groupModal, { IGroupModal } from './group.model';
 
-interface IPlayerGroupService {
-  getAllGroups: (userId: string) => Promise<PlayerGroup[]>;
+interface IGroupService {
+  getAllGroups: (userId: string) => Promise<Group[]>;
   getGroupByGroupId: (
     group: number | string,
   ) => Promise<
-    | (PlayerGroup & {
+    | (Group & {
         players: Player[];
       })
     | null
   >;
-  deleteGroupById: (group: number | string) => Promise<PlayerGroup | null>;
-  createNewGroup: (data: {
-    userId: number;
-    name: string;
-  }) => Promise<PlayerGroup>;
+  deleteGroupById: (group: number | string) => Promise<Group | null>;
+  createNewGroup: (data: { userId: number; name: string }) => Promise<Group>;
 
   updateGroupNameById: (
     data: UpdateGroupNameRequest,
   ) => Promise<
-    | (PlayerGroup & {
+    | (Group & {
         players: Player[];
       })
     | null
@@ -41,22 +38,20 @@ interface IPlayerGroupService {
 
   updateManyPlayersConnectionInGroup: (
     data: UpdateManyPlayersOfGroupRequest,
-  ) => Promise<PlayerGroup>;
+  ) => Promise<Group>;
 
   updateOnePlayersConnectionToGroup: (
     data: updateOnePlayersConnectionToAGroupRequest,
-  ) => Promise<PlayerGroup>;
+  ) => Promise<Group>;
 
-  disconnectPlayerById: (
-    data: DisconnectPlayersRequest,
-  ) => Promise<PlayerGroup>;
+  disconnectPlayerById: (data: DisconnectPlayersRequest) => Promise<Group>;
 }
 
-class PlayerGroupService implements IPlayerGroupService {
-  private groupModel: IPlayerGroupModal;
+class GroupService implements IGroupService {
+  private groupModel: IGroupModal;
 
   constructor() {
-    this.groupModel = playerGroupModal;
+    this.groupModel = groupModal;
   }
 
   async createNewGroup(data: { userId: number; name: string }) {
@@ -64,7 +59,7 @@ class PlayerGroupService implements IPlayerGroupService {
     return group;
   }
 
-  async getAllGroups(userId: string): Promise<PlayerGroup[]> {
+  async getAllGroups(userId: string): Promise<Group[]> {
     if (!userId || !isStringNumeric(userId))
       throw new BadRequestError('invalid credentials');
 
@@ -138,6 +133,6 @@ class PlayerGroupService implements IPlayerGroupService {
   }
 }
 
-const playerGroupService = new PlayerGroupService();
+const groupService = new GroupService();
 
-export default playerGroupService;
+export default groupService;

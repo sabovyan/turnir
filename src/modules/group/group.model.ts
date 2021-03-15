@@ -1,5 +1,4 @@
-import { Player, PlayerGroup } from '@prisma/client';
-import { isThisTypeNode } from 'typescript';
+import { Player, Group } from '@prisma/client';
 import prisma from '../../lib/prismaClient';
 import {
   DisconnectPlayersRequest,
@@ -8,28 +7,33 @@ import {
   updateOnePlayersConnectionToAGroupRequest,
 } from './group.type';
 
-export interface IPlayerGroupModal {
-  createNewGroup: (data: {
-    name: string;
-    userId: number;
-  }) => Promise<PlayerGroup>;
+type OrderType = 'asc' | 'desc';
 
-  getAllGroups: (userId: number) => Promise<PlayerGroup[]>;
+const setAlphabeticalOrder = (type: OrderType) => ({
+  orderBy: {
+    name: type,
+  },
+});
+
+export interface IGroupModal {
+  createNewGroup: (data: { name: string; userId: number }) => Promise<Group>;
+
+  getAllGroups: (userId: number) => Promise<Group[]>;
   getGroupByGroupId: (
     groupId: number,
   ) => Promise<
-    | (PlayerGroup & {
+    | (Group & {
         players: Player[];
       })
     | null
   >;
-  deleteGroupById: (groupId: number) => Promise<PlayerGroup | null>;
+  deleteGroupById: (groupId: number) => Promise<Group | null>;
   updateGroupNameById: ({
     groupId,
     userId,
     name,
   }: UpdateGroupNameRequest) => Promise<
-    | (PlayerGroup & {
+    | (Group & {
         players: Player[];
       })
     | null
@@ -37,22 +41,20 @@ export interface IPlayerGroupModal {
 
   updateManyPlayersConnectionInGroup: (
     data: UpdateManyPlayersOfGroupRequest,
-  ) => Promise<PlayerGroup>;
+  ) => Promise<Group>;
   updateOnePlayersConnectionToGroup: (
     data: updateOnePlayersConnectionToAGroupRequest,
-  ) => Promise<PlayerGroup>;
-  disconnectPlayerById: (
-    data: DisconnectPlayersRequest,
-  ) => Promise<PlayerGroup>;
+  ) => Promise<Group>;
+  disconnectPlayerById: (data: DisconnectPlayersRequest) => Promise<Group>;
 
   // update: () => {};
   // deleteAll: () => {};
 }
 
-class PlayerGroupsModel implements IPlayerGroupModal {
+class GroupModal implements IGroupModal {
   // eslint-disable-next-line class-methods-use-this
   async createNewGroup(data: { name: string; userId: number }) {
-    const group = await prisma.playerGroup.create({
+    const group = await prisma.group.create({
       data: {
         name: data.name,
         User: {
@@ -62,7 +64,7 @@ class PlayerGroupsModel implements IPlayerGroupModal {
         },
       },
       include: {
-        players: true,
+        players: setAlphabeticalOrder('asc'),
       },
     });
 
@@ -71,12 +73,16 @@ class PlayerGroupsModel implements IPlayerGroupModal {
 
   // eslint-disable-next-line class-methods-use-this
   async getAllGroups(userId: number) {
-    const groups = await prisma.playerGroup.findMany({
+    const groups = await prisma.group.findMany({
       where: {
         userId,
       },
       include: {
-        players: true,
+        players: {
+          orderBy: {
+            name: 'asc',
+          },
+        },
       },
     });
 
@@ -85,12 +91,16 @@ class PlayerGroupsModel implements IPlayerGroupModal {
 
   // eslint-disable-next-line class-methods-use-this
   async getGroupByGroupId(id: number) {
-    const group = await prisma.playerGroup.findUnique({
+    const group = await prisma.group.findUnique({
       where: {
         id,
       },
       include: {
-        players: true,
+        players: {
+          orderBy: {
+            name: 'asc',
+          },
+        },
       },
     });
 
@@ -99,7 +109,7 @@ class PlayerGroupsModel implements IPlayerGroupModal {
 
   // eslint-disable-next-line class-methods-use-this
   async deleteGroupById(id: number) {
-    const group = await prisma.playerGroup.delete({
+    const group = await prisma.group.delete({
       where: {
         id,
       },
@@ -110,7 +120,7 @@ class PlayerGroupsModel implements IPlayerGroupModal {
 
   // eslint-disable-next-line class-methods-use-this
   async updateGroupNameById({ groupId, name }: UpdateGroupNameRequest) {
-    const group = await prisma.playerGroup.update({
+    const group = await prisma.group.update({
       where: {
         id: groupId,
       },
@@ -131,7 +141,7 @@ class PlayerGroupsModel implements IPlayerGroupModal {
     groupId,
     playerIds,
   }: UpdateManyPlayersOfGroupRequest) {
-    const group = await prisma.playerGroup.update({
+    const group = await prisma.group.update({
       where: {
         id: groupId,
       },
@@ -152,7 +162,7 @@ class PlayerGroupsModel implements IPlayerGroupModal {
   async updateOnePlayersConnectionToGroup(
     data: updateOnePlayersConnectionToAGroupRequest,
   ) {
-    const group = await prisma.playerGroup.update({
+    const group = await prisma.group.update({
       where: {
         id: data.groupId,
       },
@@ -174,7 +184,7 @@ class PlayerGroupsModel implements IPlayerGroupModal {
 
   // eslint-disable-next-line class-methods-use-this
   async disconnectPlayerById({ groupId, playerId }: DisconnectPlayersRequest) {
-    const group = await prisma.playerGroup.update({
+    const group = await prisma.group.update({
       where: {
         id: groupId,
       },
@@ -194,6 +204,6 @@ class PlayerGroupsModel implements IPlayerGroupModal {
   }
 }
 
-const playerGroupModel = new PlayerGroupsModel();
+const groupModal = new GroupModal();
 
-export default playerGroupModel;
+export default groupModal;

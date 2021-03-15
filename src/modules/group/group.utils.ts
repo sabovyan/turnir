@@ -6,7 +6,8 @@ import {
   DisconnectPlayersRequest,
   UpdateManyPlayersOfGroupRequest,
 } from './group.type';
-import playerGroupModel from './playerGroups.modal';
+
+import groupModal from './group.model';
 
 export const validateGroupNameUpdateFields = async (
   groupId: unknown,
@@ -30,7 +31,7 @@ export const validateFieldsForDisconnect = async ({
   if (!isNumber(groupId)) throw new BadRequestError('wrong credentials');
   if (!isNumber(playerId)) throw new BadRequestError('wrong credentials');
 
-  const foundGroup = await playerGroupModel.getGroupByGroupId(groupId);
+  const foundGroup = await groupModal.getGroupByGroupId(groupId);
 
   if (!foundGroup) throw new BadRequestError("group doesn't exist");
 
@@ -52,7 +53,7 @@ export const validateAddMultiplePlayers = async ({
     throw new BadRequestError('wrong credentials');
   }
 
-  const currentGroup = await playerGroupModel.getGroupByGroupId(groupId);
+  const currentGroup = await groupModal.getGroupByGroupId(groupId);
 
   if (!currentGroup) throw new BadRequestError("group doesn't exit");
 };

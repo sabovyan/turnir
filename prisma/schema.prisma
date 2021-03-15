@@ -8,31 +8,19 @@ generator client {
 }
 
 model User {
-  id                Int           @id @default(autoincrement())
+  id                Int          @id @default(autoincrement())
   displayName       String
-  email             String        @unique
+  email             String       @unique
   password          String
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-  verified          Boolean       @default(false)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  verified          Boolean      @default(false)
   verificationToken String?
   googleId          String?
   facebookId        String?
   tournament        Tournament[]
   player            Player[]
-  PlayerGroup       PlayerGroup[]
-}
-
-model Tournament {
-  id               Int            @id @default(autoincrement())
-  goalsToWin       Int?
-  winningSets      Int
-  players          Player[]
-  User             User           @relation(fields: [userId], references: [id])
-  userId           Int
-  tournamentType   TournamentType @relation(fields: [tournamentTypeId], references: [id])
-  tournamentTypeId Int
-  games            Game[]
+  group             Group[]
 }
 
 model TournamentType {
@@ -42,39 +30,57 @@ model TournamentType {
   tournament  Tournament[]
 }
 
-model Player {
-  id            Int           @id @default(autoincrement())
-  name          String
-  tournament    Tournament?   @relation(fields: [tournamentId], references: [id])
-  tournamentId  Int?
-  score         Score[]
-  User          User          @relation(fields: [userId], references: [id])
-  userId        Int
-  playersGroups PlayerGroup[]
-
-}
-
-model PlayerGroup {
-  id      Int      @id @default(autoincrement())
-  name    String   @unique
-  User    User     @relation(fields: [userId], references: [id])
-  userId  Int
-  players Player[]
+model Tournament {
+  id               Int            @id @default(autoincrement())
+  goalsToWin       Int
+  winningSets      Int
+  User             User           @relation(fields: [userId], references: [id])
+  userId           Int
+  tournamentType   TournamentType @relation(fields: [tournamentTypeId], references: [id])
+  tournamentTypeId Int
+  games            Game[]
 }
 
 model Game {
   id           Int        @id @default(autoincrement())
   tournament   Tournament @relation(fields: [tournamentId], references: [id])
   tournamentId Int
-  score        Score[]
+  // participant1    Player[]   @relation("gameOfParticipant1", fields: [participant1Ids], references: [id])
+  participant1 Player[]   @relation("gameOfParticipant1")
+  participant2 Player[]   @relation("gameOfParticipant2")
+  // participant2    Player[]   @relation("gameOfParticipant2", fields: [participant2Ids], references: [id])
+  // participant1Ids Int[]
+  // participant2Ids Int[]
   index        Float?
+  nextGame     Game?      @relation(fields: [gameId], references: [id])
+  gameId       Int?
+  Game         Game[]     @relation("GameToGame")
+  score1       Int[]
+  score2       Int[]
+
+
+  Player Player[]
 }
 
-model Score {
-  id       Int    @id @default(autoincrement())
-  game     Game   @relation(fields: [gameId], references: [id])
-  gameId   Int
-  player   Player @relation(fields: [playerId], references: [id])
-  playerId Int
-  point    Int?
+model Player {
+  id                 Int     @id @default(autoincrement())
+  name               String
+  User               User    @relation(fields: [userId], references: [id])
+  userId             Int
+  groups             Group[]
+  gameOfParticipant1 Game[]  @relation("gameOfParticipant1")
+  gameOfParticipant2 Game[]  @relation("gameOfParticipant2")
+  totalGames         Int?
+  totalWins          Int?
+  totalPoints        Int?
+  Game               Game?   @relation(fields: [gameId], references: [id])
+  gameId             Int?
+}
+
+model Group {
+  id      Int      @id @default(autoincrement())
+  name    String   @unique
+  User    User     @relation(fields: [userId], references: [id])
+  userId  Int
+  players Player[]
 }

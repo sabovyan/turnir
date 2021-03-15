@@ -13,8 +13,7 @@ import prisma from './lib/prismaClient';
     await prisma.user.deleteMany();
     await prisma.player.deleteMany();
     await prisma.game.deleteMany();
-    await prisma.playerGroup.deleteMany();
-    await prisma.score.deleteMany();
+    await prisma.group.deleteMany();
     await prisma.tournament.deleteMany();
     await prisma.tournamentType.deleteMany();
   }

@@ -6,7 +6,7 @@ import {
   UpdateManyPlayersOfGroupRequest,
   updateOnePlayersConnectionToAGroupRequest,
 } from './group.type';
-import playerGroupService from './playerGroup.service';
+import playerGroupService from './group.service';
 
 export const getAllPlayerGroups = asyncWrapper(
   async (req: Request, res: Response) => {

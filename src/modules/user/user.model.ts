@@ -1,5 +1,5 @@
 /* eslint-disable class-methods-use-this */
-import { Player, PlayerGroup, User } from '@prisma/client';
+import { Player, Group, User } from '@prisma/client';
 import prisma from '../../lib/prismaClient';
 import { UserData } from '../auth/auth.types';
 
@@ -56,7 +56,7 @@ class UserModel {
   static async getAllPlayersAndGroupsByUserId(
     userId: number,
   ): Promise<{
-    PlayerGroup: PlayerGroup[];
+    group: Group[];
     player: Player[];
   } | null> {
     const response = await prisma.user.findUnique({
@@ -64,12 +64,20 @@ class UserModel {
         id: userId,
       },
       select: {
-        PlayerGroup: {
+        group: {
           include: {
-            players: true,
+            players: {
+              orderBy: {
+                name: 'asc',
+              },
+            },
           },
         },
-        player: true,
+        player: {
+          orderBy: {
+            name: 'asc',
+          },
+        },
       },
     });
 

@@ -90,14 +90,14 @@ class PlayerModel implements IPlayerModel {
       },
 
       data: {
-        playersGroups: {
+        groups: {
           connect: {
             id: groupId,
           },
         },
       },
       include: {
-        playersGroups: true,
+        groups: true,
       },
     });
 

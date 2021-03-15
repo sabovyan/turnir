@@ -1,14 +1,12 @@
 import cors from 'cors';
-import express, { Application, Request, Response } from 'express';
+import express, { Application } from 'express';
 import cookieParser from 'cookie-parser';
 import { Server } from 'http';
-import authenticateUser from './middleware/authenticate';
 import errorHandler from './middleware/ErrorHandler';
 import authRouter from './modules/auth/auth.route';
-import testRoute, { testRouteWithToken } from './test/test.controller';
 import tournamentRouter from './modules/tournament/tournament.route';
 import playersRouter from './modules/players/players.route';
-import playerGroupRouter from './modules/playerGroups/playerGroup.route';
+import groupRouter from './modules/group/group.route';
 import userRouter from './modules/user/user.route';
 
 class App {
@@ -27,7 +25,7 @@ class App {
     this.app.use('/api/tournament', tournamentRouter);
     this.app.use('/api/auth', authRouter);
     this.app.use('/api/players', playersRouter);
-    this.app.use('/api/playerGroup', playerGroupRouter);
+    this.app.use('/api/group', groupRouter);
     this.app.use('/api/user', userRouter);
     this.app.use(errorHandler);
   }
@@ -36,7 +34,10 @@ class App {
     this.setConfig();
     return this.app.listen(this.port, () =>
       // eslint-disable-next-line no-console
-      console.log('\x1b[33m%s\x1b[0m', `🚀 listening port ${this.port}`),
+      console.log(
+        '\x1b[43m\x1b[37m%s\x1b[0m',
+        `🚀 listening port ${this.port}`,
+      ),
     );
   }
 }

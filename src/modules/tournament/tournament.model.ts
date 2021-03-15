@@ -6,12 +6,12 @@ import prisma from '../../lib/prismaClient';
 interface ITournament {
   getAll: (userId: number) => Promise<Tournament[]>;
   get: (tournamentId: number) => Promise<Tournament | null>;
-  getTournamentWithPlayersAndGames: (
-    tournamentId: number,
-  ) => Promise<
-    Prisma.Prisma__TournamentClient<(Tournament & { players: Player[] }) | null>
-  >;
-  createTournamentWithPlayers: (
+  // getTournamentWithPlayersAndGames: (
+  //   tournamentId: number,
+  // ) => Promise<
+  //   Prisma.Prisma__TournamentClient<(Tournament & { players: Player[] }) | null>
+  // >;
+  create: (
     data: Omit<Tournament, 'id'>,
     players: Omit<Player, 'id'>[],
   ) => Promise<Tournament>;
@@ -41,7 +41,7 @@ class TournamentModel implements ITournament {
     return tournament;
   }
 
-  async createTournamentWithPlayers(
+  async create(
     data: Omit<Tournament, 'id'>,
     players: Omit<Player, 'id'>[],
   ): Promise<Tournament> {
@@ -59,39 +59,36 @@ class TournamentModel implements ITournament {
             id: data.tournamentTypeId,
           },
         },
-        // players: {
-        //   create: players.map((pl) => ({ name: pl.name })),
-        // },
       },
     });
 
     return tournament;
   }
 
-  async getTournamentWithPlayersAndGames(
-    tournamentId: number,
-    // eslint-disable-next-line camelcase
-  ): Promise<
-    Prisma.Prisma__TournamentClient<
-      (Tournament & { players: Player[] } & { games: Game[] }) | null
-    >
-  > {
-    const tournament = await prisma.tournament.findUnique({
-      where: {
-        id: tournamentId,
-      },
-      include: {
-        players: {
-          include: {
-            score: true,
-          },
-        },
-        games: true,
-      },
-    });
+  // async getTournamentWithPlayersAndGames(
+  //   tournamentId: number,
+  //   // eslint-disable-next-line camelcase
+  // ): Promise<
+  //   Prisma.Prisma__TournamentClient<
+  //     (Tournament & { players: Player[] } & { games: Game[] }) | null
+  //   >
+  // > {
+  //   const tournament = await prisma.tournament.findUnique({
+  //     where: {
+  //       id: tournamentId,
+  //     },
+  //     include: {
+  //       players: {
+  //         include: {
+  //           score: true,
+  //         },
+  //       },
+  //       games: true,
+  //     },
+  //   });
 
-    return tournament;
-  }
+  //   return tournament;
+  // }
   // updateTournament: () => Promise<Tournament>;
   // deleteTournament: () => Promise<Tournament>;
 }
