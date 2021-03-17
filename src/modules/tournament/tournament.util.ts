@@ -1,38 +1,85 @@
-// import { Player } from '.prisma/client';
+import { adjustedGame, InitialGame, setupGamesArgs } from './tournament.type';
 
-// eslint-disable-next-line max-classes-per-file
-interface Player {
-  name: string;
-}
+type FnSetupGame = (data: setupGamesArgs) => adjustedGame[];
 
-// class Score {
-//   player: Player;
-//   point: number;
-//   constructor(player: any) {
-//     this.point = 0;
-//     this.player = player;
-//   }
-// }
+export const setupGamesForATournament: FnSetupGame = ({
+  games,
+  hasThirdPlaceGame,
+}) => {
+  const missingGamesQuantity = hasThirdPlaceGame
+    ? games.length
+    : games.length - 1;
 
-// class Game {
-//   score: Score[];
-//   constructor(players: Player[]) {
-//     this.score = players.map((pl: Player) => new Score(pl));
-//   }
-// }
+  const missingGames: InitialGame[] = Array(missingGamesQuantity).fill({});
 
-export const getNumberOfGames = (players: Omit<Player, 'id'>[]) => {
-  const totalNumberOfGames = players.length - 1;
+  const totalGames = [...games, ...missingGames];
 
-  // let totalGames = 0;
-  // let count = 0;
-  // const playersCopy = [...players];
-  // const firstRoundGamesNumber =
-  //   2 ** Math.ceil(Math.log(players.length) / Math.log(2) - 1);
+  const adjustedGames = totalGames.reduce<adjustedGame[]>((acc, el) => {
+    const game: adjustedGame = {
+      participant1: {
+        connect: [],
+      },
+      participant2: {
+        connect: [],
+      },
+    };
+
+    if (el.participant1) {
+      game.participant1!.connect = el.participant1;
+    }
+
+    if (el.participant2) {
+      game.participant2!.connect = el.participant2;
+    }
+    acc.push(game);
+
+    return acc;
+  }, []);
+
+  return adjustedGames;
 };
 
-const players: Player[] = [
-  { name: 'Avet' },
-  { name: 'Gayane' },
-  { name: 'Sargis' },
-];
+// const games: Game[] = [
+//   {
+//     participant1: [{ id: 1 }, { id: 2 }],
+//     participant2: [{ id: 3 }, { id: 4 }],
+//   },
+//   {
+//     participant1: [{ id: 5 }, { id: 6 }],
+//     participant2: [{ id: 7 }, { id: 8 }],
+//   },
+// ];
+
+// const args: Args<setupGamesArguments> = {
+//   data: {
+//     games,
+//     hasThirdPlaceGame: false,
+//   },
+// };
+
+// create tournament
+
+// get data
+
+/* 
+  {
+    gamesForFirstRound: [],
+    ...tournamentSettings
+  }
+
+  gameForFirstRound : {
+    participant1Ids: [{id: 1}, {id: 2}],
+    participant2Ids: [{id: 3}, {id: 4}],
+  }
+
+  round: {
+    game: 
+    name: 
+
+  }
+
+*/
+
+// 1. create tournament
+
+// 2.

@@ -45,12 +45,8 @@ model Game {
   id           Int        @id @default(autoincrement())
   tournament   Tournament @relation(fields: [tournamentId], references: [id])
   tournamentId Int
-  // participant1    Player[]   @relation("gameOfParticipant1", fields: [participant1Ids], references: [id])
   participant1 Player[]   @relation("gameOfParticipant1")
   participant2 Player[]   @relation("gameOfParticipant2")
-  // participant2    Player[]   @relation("gameOfParticipant2", fields: [participant2Ids], references: [id])
-  // participant1Ids Int[]
-  // participant2Ids Int[]
   index        Float?
   nextGame     Game?      @relation(fields: [gameId], references: [id])
   gameId       Int?

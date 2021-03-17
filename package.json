@@ -14,6 +14,7 @@
     "lint": "eslint src/**/*.ts  --fix",
     "p-studio": "prisma studio",
     "p-migrate": "prisma migrate dev --create-only --name 'init' --preview-feature",
+    "p-generate": "prisma generate",
     "prisma": "prisma migrate dev --create-only --name 'init' --preview-feature && prisma generate && prisma studio"
   },
   "keywords": [],
@@ -21,7 +22,7 @@
   "license": "ISC",
   "dependencies": {
     "@hapi/joi": "^17.1.1",
-    "@prisma/client": "^2.18.0",
+    "@prisma/client": "^2.19.0",
     "@sendgrid/mail": "^7.4.0",
     "bcrypt": "^5.0.0",
     "cookie-parser": "^1.4.5",
@@ -56,7 +57,7 @@
     "eslint-plugin-prettier": "^3.3.0",
     "nodemon": "^2.0.6",
     "prettier": "^2.2.1",
-    "prisma": "^2.18.0",
+    "prisma": "^2.19.0",
     "ts-loader": "^6.2.2",
     "typescript": "^4.1.3",
     "webpack": "^4.44.2",

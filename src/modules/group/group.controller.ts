@@ -7,6 +7,7 @@ import {
   updateOnePlayersConnectionToAGroupRequest,
 } from './group.type';
 import playerGroupService from './group.service';
+import { IRequest } from '../../types/main';
 
 export const getAllPlayerGroups = asyncWrapper(
   async (req: Request, res: Response) => {
@@ -89,12 +90,8 @@ export const addOnePlayerToGroup = asyncWrapper(
   },
 );
 
-interface CustomRequest<T> extends Request {
-  body: T;
-}
-
 export const removePlayerFromGroup = asyncWrapper(
-  async (req: CustomRequest<DisconnectPlayersRequest>, res: Response) => {
+  async (req: IRequest<DisconnectPlayersRequest>, res: Response) => {
     const data = req.body;
 
     const group = await playerGroupService.disconnectPlayerById(data);

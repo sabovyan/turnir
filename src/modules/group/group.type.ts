@@ -1,11 +1,9 @@
+import { PlayerId } from '../../types/main';
+
 export type UpdateGroupNameRequest = {
   groupId: number;
   userId: number;
   name: string;
-};
-
-export type PlayerId = {
-  id: number;
 };
 
 export type UpdateManyPlayersOfGroupRequest = {
