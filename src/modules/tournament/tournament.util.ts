@@ -1,85 +1,82 @@
-import { adjustedGame, InitialGame, setupGamesArgs } from './tournament.type';
+import { Game } from '.prisma/client';
 
-type FnSetupGame = (data: setupGamesArgs) => adjustedGame[];
+const connectedGames: Game[] = [
+  {
+    id: 30,
+    participant1Id: 46,
+    participant2Id: 45,
+    index: null,
+    thirdPlaceGameId: null,
+    nextGameId: null,
+    score: [],
+    roundId: null,
+  },
+  {
+    id: 31,
+    participant1Id: 47,
+    participant2Id: null,
+    index: null,
+    thirdPlaceGameId: null,
+    nextGameId: null,
+    score: [],
+    roundId: null,
+  },
+  {
+    id: 32,
+    participant1Id: null,
+    participant2Id: null,
+    index: null,
+    thirdPlaceGameId: null,
+    nextGameId: null,
+    score: [],
+    roundId: null,
+  },
+];
 
-export const setupGamesForATournament: FnSetupGame = ({
-  games,
-  hasThirdPlaceGame,
-}) => {
-  const missingGamesQuantity = hasThirdPlaceGame
-    ? games.length
-    : games.length - 1;
+export const setupGamesForUpdate = (
+  games: Game[],
+  _firstRoundGamesQuantity: number,
+  hasThirdPlaceGame: boolean,
+): Game[] => {
+  const copiedGames: Game[] = JSON.parse(JSON.stringify(games));
+  copiedGames.reverse();
 
-  const missingGames: InitialGame[] = Array(missingGamesQuantity).fill({});
+  let count = 0;
+  let linkedGamesCount = 0;
 
-  const totalGames = [...games, ...missingGames];
-
-  const adjustedGames = totalGames.reduce<adjustedGame[]>((acc, el) => {
-    const game: adjustedGame = {
-      participant1: {
-        connect: [],
-      },
-      participant2: {
-        connect: [],
-      },
-    };
-
-    if (el.participant1) {
-      game.participant1!.connect = el.participant1;
+  const updatedGames = copiedGames.reduce<Game[]>((acc, game, idx) => {
+    if (idx === 0) {
+      acc.push(game);
+      return acc;
     }
 
-    if (el.participant2) {
-      game.participant2!.connect = el.participant2;
+    if (idx < 2 && hasThirdPlaceGame) {
+      acc.push(game);
+      return acc;
     }
+
+    if (idx > 1 && idx < 4) {
+      if (hasThirdPlaceGame) {
+        game.thirdPlaceGameId = games[1].id;
+      }
+      game.nextGameId = copiedGames[count].id;
+
+      acc.push(game);
+      return acc;
+    }
+
+    game.nextGameId = copiedGames[count].id;
+
+    linkedGamesCount += 1;
+
+    if (linkedGamesCount === 2) {
+      linkedGamesCount = 1;
+      count += 1;
+    }
+
     acc.push(game);
-
     return acc;
   }, []);
 
-  return adjustedGames;
+  return updatedGames;
 };
-
-// const games: Game[] = [
-//   {
-//     participant1: [{ id: 1 }, { id: 2 }],
-//     participant2: [{ id: 3 }, { id: 4 }],
-//   },
-//   {
-//     participant1: [{ id: 5 }, { id: 6 }],
-//     participant2: [{ id: 7 }, { id: 8 }],
-//   },
-// ];
-
-// const args: Args<setupGamesArguments> = {
-//   data: {
-//     games,
-//     hasThirdPlaceGame: false,
-//   },
-// };
-
-// create tournament
-
-// get data
-
-/* 
-  {
-    gamesForFirstRound: [],
-    ...tournamentSettings
-  }
-
-  gameForFirstRound : {
-    participant1Ids: [{id: 1}, {id: 2}],
-    participant2Ids: [{id: 3}, {id: 4}],
-  }
-
-  round: {
-    game: 
-    name: 
-
-  }
-
-*/
-
-// 1. create tournament
-
-// 2.

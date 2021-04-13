@@ -1,23 +1,14 @@
 import { PrismaClient } from '@prisma/client';
+import seedPlayers from './seed/seedPlayers';
+import seedTournamentTypes from './seed/seedTournamentTypes';
 
 const prisma = new PrismaClient();
+
 async function main() {
-  await prisma.tournamentType.create({
-    data: {
-      name: 'Elimination',
-    },
-  });
-  await prisma.tournamentType.create({
-    data: {
-      name: 'Last Man Standing',
-    },
-  });
-  await prisma.tournamentType.create({
-    data: {
-      name: 'Round Robin',
-    },
-  });
+  await seedTournamentTypes(prisma);
+  // await seedPlayers(prisma);
 }
+
 main()
   .catch((e) => {
     console.error(e);

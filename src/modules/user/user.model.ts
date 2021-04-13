@@ -56,15 +56,15 @@ class UserModel {
   static async getAllPlayersAndGroupsByUserId(
     userId: number,
   ): Promise<{
-    group: Group[];
-    player: Player[];
+    groups: Group[];
+    players: Player[];
   } | null> {
     const response = await prisma.user.findUnique({
       where: {
         id: userId,
       },
       select: {
-        group: {
+        groups: {
           include: {
             players: {
               orderBy: {
@@ -73,7 +73,7 @@ class UserModel {
             },
           },
         },
-        player: {
+        players: {
           orderBy: {
             name: 'asc',
           },

@@ -1,21 +1,50 @@
-import { Game, Player, Prisma, Tournament } from '@prisma/client';
+import { Game, Participant, Prisma, Round, Tournament } from '@prisma/client';
 import prisma from '../../lib/prismaClient';
-import { FunctionTypeWithPromiseResult } from '../../types/main';
+import {
+  FunctionTypeWithPromiseResult,
+  OnlyId,
+  OnlyName,
+  updateDataById,
+} from '../../types/main';
 import { ICreateTournamentData } from './tournament.type';
 
-interface ICreateGames {
-  tournamentId: number;
-}
+type getAllResponse = {
+  name: string;
+  goalsToWin: number;
+  winningSets: number;
+  createdAt: Date;
+  rounds: Round[];
+  id: number;
+  tournamentTypeId: number;
+};
 
 export interface ITournamentModel {
   create: FunctionTypeWithPromiseResult<
     ICreateTournamentData,
     Tournament & {
-      games: (Game & {
-        participant1: Player[];
-        participant2: Player[];
+      rounds: (Round & {
+        games: (Game & {
+          participant1: Participant | null;
+          participant2: Participant | null;
+        })[];
       })[];
     }
+  >;
+  getAll: FunctionTypeWithPromiseResult<
+    OnlyId,
+    {
+      id: number;
+      tournamentTypeId: number;
+      name: string;
+      createdAt: Date;
+    }[]
+  >;
+  getById: FunctionTypeWithPromiseResult<OnlyId, Tournament | null>;
+  updateById: FunctionTypeWithPromiseResult<updateDataById<any>, Tournament>;
+
+  deleteById: FunctionTypeWithPromiseResult<
+    OnlyId,
+    Tournament & { rounds: Round[] }
   >;
 }
 
@@ -31,12 +60,14 @@ class TournamentModel implements ITournamentModel {
     tournamentTypeId,
     userId,
     winningSets,
-    games,
+    rounds,
+    name,
   }: ICreateTournamentData) {
     const tournament = await this.instance.create({
       data: {
         winningSets,
         goalsToWin,
+        name,
         User: {
           connect: {
             id: userId,
@@ -47,15 +78,19 @@ class TournamentModel implements ITournamentModel {
             id: tournamentTypeId,
           },
         },
-        games: {
-          create: games,
+        rounds: {
+          connect: rounds.map((r) => ({ id: r.id })),
         },
       },
       include: {
-        games: {
+        rounds: {
           include: {
-            participant1: true,
-            participant2: true,
+            games: {
+              include: {
+                participant1: true,
+                participant2: true,
+              },
+            },
           },
         },
       },
@@ -63,66 +98,84 @@ class TournamentModel implements ITournamentModel {
 
     return tournament;
   }
+
+  async getAll({ id }: OnlyId) {
+    const allTournaments = await this.instance.findMany({
+      where: {
+        userId: id,
+      },
+      select: {
+        id: true,
+        name: true,
+        tournamentTypeId: true,
+        createdAt: true,
+        // winningSets: true,
+        // goalsToWin: true,
+        // rounds: {
+        //   include: {
+        //     game: {
+        //       include: {
+        //         participant1: true,
+        //         participant2: true,
+        //       },
+        // },
+        // },
+        // },
+      },
+    });
+
+    return allTournaments;
+  }
+
+  async getById({ id }: OnlyId) {
+    const tournament = this.instance.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        rounds: {
+          include: {
+            games: {
+              include: {
+                participant1: true,
+                participant2: true,
+              },
+            },
+          },
+          orderBy: {
+            name: 'desc',
+          },
+        },
+      },
+    });
+
+    return tournament;
+  }
+
+  async updateById({ id, data }: updateDataById<any>) {
+    const tournament = await this.instance.update({
+      where: {
+        id,
+      },
+      data,
+    });
+    return tournament;
+  }
+
+  async deleteById({ id }: OnlyId) {
+    const tournament = await this.instance.delete({
+      where: {
+        id,
+      },
+
+      include: {
+        rounds: true,
+      },
+    });
+    return tournament;
+  }
 }
 
 const tournamentModel = new TournamentModel();
 
 export default tournamentModel;
-
-// eslint-disable-next-line class-methods-use-this
-// async getAll(userId: number): Promise<Tournament[]> {
-//   const tournaments = await prisma.tournament.findMany({
-//     where: {
-//       userId,
-//     },
-//   });
-//   return tournaments;
-// }
-
-// // eslint-disable-next-line class-methods-use-this
-// async get(tournamentId: number): Promise<Tournament | null> {
-//   const tournament = prisma.tournament.findUnique({
-//     where: {
-//       id: tournamentId,
-//     },
-//   });
-//   return tournament;
-// }
-
-// async getTournamentWithPlayersAndGames(
-//   tournamentId: number,
-//   // eslint-disable-next-line camelcase
-// ): Promise<
-//   Prisma.Prisma__TournamentClient<
-//     (Tournament & { players: Player[] } & { games: Game[] }) | null
-//   >
-// > {
-//   const tournament = await prisma.tournament.findUnique({
-//     where: {
-//       id: tournamentId,
-//     },
-//     include: {
-//       players: {
-//         include: {
-//           score: true,
-//         },
-//       },
-//       games: true,
-//     },
-//   });
-
-//   return tournament;
-// }
-// updateTournament: () => Promise<Tournament>;
-// deleteTournament: () => Promise<Tournament>;
-
-// getAll: (userId: number) => Promise<Tournament[]>;
-// get: (tournamentId: number) => Promise<Tournament | null>;
-// getTournamentWithPlayersAndGames: (
-//   tournamentId: number,
-// ) => Promise<
-//   Prisma.Prisma__TournamentClient<(Tournament & { players: Player[] }) | null>
-// >;
-// updateTournament: () => Promise<Tournament>;
-// deleteTournament: () => Promise<Tournament>;
-// deleteAllTournament: () => Promise<Tournament[]>;

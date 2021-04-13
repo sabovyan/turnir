@@ -2,8 +2,14 @@ import { NextFunction, Request, Response } from 'express';
 import { accessToken } from '../config/token';
 import AuthError from '../errors/AuthError';
 
+interface requestWithUser extends Request {
+  user?: {
+    id: number;
+  };
+}
+
 const authenticateUser = (
-  req: Request,
+  req: requestWithUser,
   res: Response,
   next: NextFunction,
 ): void => {
@@ -21,6 +27,9 @@ const authenticateUser = (
   if (accessPayload.err) {
     throw new AuthError(accessPayload.err.message);
   } else {
+    req.user = {
+      id: accessPayload.id,
+    };
     next();
   }
 };

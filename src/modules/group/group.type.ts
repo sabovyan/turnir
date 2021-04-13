@@ -1,4 +1,4 @@
-import { PlayerId } from '../../types/main';
+import { OnlyId } from '../../types/main';
 
 export type UpdateGroupNameRequest = {
   groupId: number;
@@ -8,7 +8,7 @@ export type UpdateGroupNameRequest = {
 
 export type UpdateManyPlayersOfGroupRequest = {
   groupId: number;
-  playerIds: PlayerId[];
+  playerIds: OnlyId[];
 };
 
 export type updateOnePlayersConnectionToAGroupRequest = {

@@ -1,16 +1,23 @@
 import { Router } from 'express';
-import authenticateUser from '../../middleware/authenticate';
 import {
   createTournament,
-  // getTournamentWithPlayersAndGames,
+  deleteTournamentById,
+  getAllTournaments,
+  getTournamentById,
+  updateTournamentNameById,
 } from './tournament.controller';
+import authenticateUser from '../../middleware/authenticate';
 
 const tournamentRouter = Router();
 
-// tournamentRouter.use(authenticateUser);
+tournamentRouter.use(authenticateUser);
 
-tournamentRouter.route('/').post(createTournament);
+tournamentRouter.route('/').get(getAllTournaments).post(createTournament);
 
-// tournamentRouter.route('/:id').get(getTournamentWithPlayersAndGames);
+tournamentRouter
+  .route('/:id')
+  .get(getTournamentById)
+  .put(updateTournamentNameById)
+  .delete(deleteTournamentById);
 
 export default tournamentRouter;

@@ -8,8 +8,8 @@ interface IUserInterface {
   getAllGroupsAndPlayers: (
     id: string,
   ) => Promise<{
-    group: Group[];
-    player: Player[];
+    groups: Group[];
+    players: Player[];
   } | null>;
 }
 

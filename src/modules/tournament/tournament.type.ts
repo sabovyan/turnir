@@ -1,37 +1,20 @@
-import { PlayerId } from '../../types/main';
-
-export interface InitialGame {
-  participant1?: PlayerId[];
-  participant2?: PlayerId[];
-}
-
-export interface setupGamesArgs {
-  games: InitialGame[];
-  hasThirdPlaceGame: boolean;
-}
-
-export interface adjustedGame {
-  participant1?: {
-    connect: PlayerId[];
-  };
-  participant2?: {
-    connect: PlayerId[];
-  };
-}
+import { Game, Round } from '@prisma/client';
+import { IAdjustedGame, ParticipantPair } from '../game/games.types';
 
 export interface ICreateTournamentArgs {
   userId: number;
   winningSets: number;
   goalsToWin: number;
   tournamentTypeId: number;
+  name: string;
 }
 
 export interface ICreateTournamentRequestBody extends ICreateTournamentArgs {
-  games: InitialGame[];
+  games: ParticipantPair[];
   hasThirdPlaceGame: boolean;
 }
 
 export interface ICreateTournamentData extends ICreateTournamentArgs {
-  games: adjustedGame[];
   hasThirdPlaceGame: boolean;
+  rounds: Round[];
 }
