@@ -1,46 +1,62 @@
-import { Game, Participant, Tournament } from '.prisma/client';
+// import { Game, Tournament } from '.prisma/client';
 import BadRequestError from '../../errors/BadRequestError';
 import {
   FunctionTypeWithPromiseResult,
+  GameInstance,
   OnlyId,
   OnlyName,
+  RoundName,
+  TournamentInstance,
   updateDataById,
-} from '../../types/main';
-import gameService, { IGameService } from '../game/games.service';
+} from '../../types';
+import getAllGamesFromRounds from '../../utils/getAllGamesFromRounds';
+import getParticipantIdsFromGames from '../../utils/getParticipantsfromGames';
+import gameService, { IGameService } from '../game/game.service';
 import participantService, {
   IParticipantService,
 } from '../participant/participant.service';
 import roundService, { IRoundService } from '../rounds/round.service';
 import tournamentModel, { ITournamentModel } from './tournament.model';
-import { ICreateTournamentRequestBody } from './tournament.type';
+import {
+  ICreateTournament,
+  IUpdateTournamentGame,
+  ShrunkTournament,
+  TournamentAllTogether,
+} from './tournament.type';
+import { getWinnerAndLooserIds } from './tournament.util';
 
-interface GameWithParticipants extends Game {
-  participant1: Participant[];
-  participant2: Participant[];
-}
-
-interface TournamentAllTogether extends Tournament {
-  games: GameWithParticipants[];
+interface UpdatedGameAndNextGAme {
+  updatedGame: GameInstance;
+  nextGame?: GameInstance;
 }
 
 interface ITournamentService {
   create: FunctionTypeWithPromiseResult<
-    ICreateTournamentRequestBody,
+    ICreateTournament,
     TournamentAllTogether
   >;
 
-  getAll: FunctionTypeWithPromiseResult<OnlyId, TournamentAllTogether[]>;
-  getById: FunctionTypeWithPromiseResult<OnlyId, Tournament>;
+  getAll: FunctionTypeWithPromiseResult<OnlyId, ShrunkTournament[]>;
+  getById: FunctionTypeWithPromiseResult<OnlyId, TournamentAllTogether | null>;
   updateNameById: FunctionTypeWithPromiseResult<
     updateDataById<OnlyName>,
-    Tournament
+    TournamentInstance
   >;
 
-  deleteById: FunctionTypeWithPromiseResult<OnlyId, Tournament>;
+  deleteById: FunctionTypeWithPromiseResult<OnlyId, TournamentInstance>;
+
+  updateGameScoreAndNextGameParticipant: FunctionTypeWithPromiseResult<
+    IUpdateTournamentGame,
+    UpdatedGameAndNextGAme
+  >;
+
+  updateCompletionStatus: FunctionTypeWithPromiseResult<
+    updateDataById<{ completionStatus: boolean }>,
+    TournamentInstance
+  >;
 }
 
-// class TournamentService implements ITournamentService {
-class TournamentService {
+class TournamentService implements ITournamentService {
   private tournamentModel: ITournamentModel;
   private gameService: IGameService;
   private roundService: IRoundService;
@@ -53,7 +69,7 @@ class TournamentService {
     this.participantService = participantService;
   }
 
-  async create(data: ICreateTournamentRequestBody) {
+  async create(data: ICreateTournament) {
     const { games, hasThirdPlaceGame, ...rest } = data;
 
     /* validate data
@@ -67,31 +83,49 @@ class TournamentService {
     
     */
 
-    const numberOfRounds = Math.log(games.length) / Math.log(2) + 1;
-
     const createdGames = await this.gameService.createGamesForATournament({
       participants: games,
-      numberOfRounds,
     });
 
     const rounds = await this.roundService.createMany({
       games: createdGames,
-      numberOfRounds,
     });
 
+    await this.roundService.updateGameParticipants(rounds);
+
     if (hasThirdPlaceGame) {
-      const finalRoundId = rounds.findIndex((round) => round.name === 'Final');
+      const finalRound = rounds.find((round) => round.name === RoundName.final);
+      if (!finalRound) throw new BadRequestError('Final round was not found');
 
       const thirdPlaceGame = await this.gameService.createSingleGame({
-        id: finalRoundId,
+        id: finalRound.id,
       });
+
+      const semiFinal = rounds.find(
+        (round) => round.name === RoundName.semiFinal,
+      );
+
+      if (!semiFinal)
+        throw new BadRequestError('semiFinal games were not found');
+
+      const updatedSemifinalGames = await this.gameService.updateSemiFinalGames(
+        { games: semiFinal.games, thirdPlaceGameId: thirdPlaceGame.id },
+      );
+
+      if (!updatedSemifinalGames)
+        throw new BadRequestError('bad things happen');
     }
 
     const tournament = await this.tournamentModel.create({
       ...rest,
-      rounds,
       hasThirdPlaceGame,
+      rounds,
     });
+
+    if (!tournament)
+      throw new BadRequestError(
+        'something went wrong with tournament creation',
+      );
 
     return tournament;
   }
@@ -100,7 +134,6 @@ class TournamentService {
     if (!data.id) throw new BadRequestError('id is not defined');
 
     const allTournament = await this.tournamentModel.getAll(data);
-
     return allTournament;
   }
 
@@ -109,7 +142,14 @@ class TournamentService {
 
     if (!tournament) throw new BadRequestError('Tournament was not found');
 
-    return tournament;
+    const { rounds, ...rest } = tournament;
+
+    const newRounds = rounds.map((round) => {
+      round.games.sort((a, b) => a.id - b.id);
+      return round;
+    });
+
+    return { ...rest, rounds: newRounds };
   }
 
   async updateNameById(data: updateDataById<OnlyName>) {
@@ -123,42 +163,119 @@ class TournamentService {
     const tournament = await this.tournamentModel.deleteById(data);
 
     const roundIds = tournament.rounds.map((r) => ({ id: r.id }));
-
-    const deletedRounds = await this.roundService.deleteTournamentAllRounds(
+    const deletedRounds = await this.roundService.deleteAllByTournamentId(
       roundIds,
     );
 
-    const games = deletedRounds.reduce<Game[]>(
-      (acc, el) => [...acc, ...el.games],
-      [],
-    );
-
+    const games = getAllGamesFromRounds(deletedRounds);
     const gameIds = games.map((g) => ({ id: g.id }));
+    const deletedGames = await this.gameService.deleteMultiple(gameIds);
 
-    const deletedGames = await this.gameService.deleteTournamentAllGames(
-      gameIds,
-    );
-
-    const ParticipantSet = deletedGames.reduce<Set<number>>(
-      (acc, { participant1Id, participant2Id }) => {
-        if (participant1Id) {
-          acc.add(participant1Id);
-        }
-
-        if (participant2Id) {
-          acc.add(participant2Id);
-        }
-
-        return acc;
-      },
-      new Set(),
-    );
-
-    const participants = Array.from(ParticipantSet).map((el) => ({ id: el }));
-
+    const participants = getParticipantIdsFromGames(deletedGames);
     const deletedParticipants = await this.participantService.deleteMany(
       participants,
     );
+
+    if (!deletedParticipants.length) {
+      throw new BadRequestError('participants were not deleted');
+    }
+
+    return tournament;
+  }
+
+  async updateGameScoreAndNextGameParticipant({
+    firstParticipantScore,
+    gameId,
+    secondParticipantScore,
+    tournamentId,
+  }: IUpdateTournamentGame) {
+    const updatedGame = await this.gameService.updateGameScore({
+      firstParticipantScore,
+      gameId,
+      secondParticipantScore,
+    });
+
+    const { winnerId, looserId } = getWinnerAndLooserIds(updatedGame);
+    if (!winnerId) throw new BadRequestError("participant doesn't exist");
+
+    if (updatedGame.nextGameId) {
+      const updatedNextGame = await this.gameService.updateGameParticipant({
+        gameId: updatedGame.nextGameId,
+        nextGamePosition: updatedGame.nextGamePosition,
+        participantId: winnerId,
+      });
+
+      if (updatedGame.thirdPlaceGameId && looserId) {
+        await this.gameService.updateGameParticipant({
+          gameId: updatedGame.thirdPlaceGameId,
+          nextGamePosition: updatedGame.nextGamePosition,
+          participantId: looserId,
+        });
+      }
+
+      /* ANCHOR this part was responsible for updating all games but it must be removed when initial update is fixed  */
+
+      /* start */
+
+      // const rounds = await this.roundService.getAllByTournamentId({
+      //   id: tournamentId,
+      // });
+      // // const isUpdated =
+      // await this.roundService.updateGameParticipants(rounds);
+      // if (!isUpdated) throw new BadRequestError('next Games were not updated');
+
+      /* end */
+
+      return { updatedGame, nextGame: updatedNextGame };
+    }
+
+    if (!updatedGame.roundId)
+      throw new BadRequestError("game doesn't belong to any round");
+
+    const currentRound = await this.roundService.getById({
+      id: updatedGame.roundId,
+    });
+
+    if (currentRound.name === RoundName.final) {
+      const { games } = currentRound;
+
+      if (games.length === 1) {
+        await this.updateCompletionStatus({
+          id: tournamentId,
+          data: { completionStatus: true },
+        });
+      } else {
+        if (!games[1].participant1Id || !games[1].participant2Id) {
+          await this.updateCompletionStatus({
+            id: tournamentId,
+            data: { completionStatus: true },
+          });
+
+          return { updatedGame };
+        }
+
+        const areGamesCompleted = games.every(
+          (game) =>
+            game.firstParticipantScore.length &&
+            game.secondParticipantScore.length,
+        );
+
+        if (areGamesCompleted) {
+          await this.updateCompletionStatus({
+            id: tournamentId,
+            data: { completionStatus: true },
+          });
+        }
+      }
+    }
+
+    return { updatedGame };
+  }
+
+  async updateCompletionStatus(
+    data: updateDataById<{ completionStatus: boolean }>,
+  ) {
+    const tournament = await this.tournamentModel.updateById(data);
 
     return tournament;
   }

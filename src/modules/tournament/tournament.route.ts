@@ -4,6 +4,7 @@ import {
   deleteTournamentById,
   getAllTournaments,
   getTournamentById,
+  updateTournamentGameScore,
   updateTournamentNameById,
 } from './tournament.controller';
 import authenticateUser from '../../middleware/authenticate';
@@ -19,5 +20,7 @@ tournamentRouter
   .get(getTournamentById)
   .put(updateTournamentNameById)
   .delete(deleteTournamentById);
+
+tournamentRouter.route('/game/:id').put(updateTournamentGameScore);
 
 export default tournamentRouter;

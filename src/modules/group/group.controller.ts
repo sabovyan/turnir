@@ -7,7 +7,7 @@ import {
   updateOnePlayersConnectionToAGroupRequest,
 } from './group.type';
 import playerGroupService from './group.service';
-import { IRequest } from '../../types/main';
+import { IRequest } from '../../types';
 
 export const getAllPlayerGroups = asyncWrapper(
   async (req: Request, res: Response) => {

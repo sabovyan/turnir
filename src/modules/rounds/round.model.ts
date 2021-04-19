@@ -1,6 +1,7 @@
 import { Game, Prisma, Round } from '.prisma/client';
 import prisma from '../../lib/prismaClient';
-import { FunctionTypeWithPromiseResult, OnlyId } from '../../types/main';
+import { FunctionTypeWithPromiseResult, OnlyId } from '../../types';
+import { RoundWithGames } from './Round.type';
 
 interface IRoundCreateArgs {
   name: string;
@@ -8,13 +9,13 @@ interface IRoundCreateArgs {
 }
 
 export interface IRoundModel {
-  create: FunctionTypeWithPromiseResult<IRoundCreateArgs, Round>;
-  deleteById: FunctionTypeWithPromiseResult<
-    OnlyId,
-    Round & {
-      games: Game[];
-    }
-  >;
+  create: FunctionTypeWithPromiseResult<IRoundCreateArgs, RoundWithGames>;
+
+  getById: FunctionTypeWithPromiseResult<OnlyId, RoundWithGames | null>;
+
+  getAllByTournamentId: FunctionTypeWithPromiseResult<OnlyId, RoundWithGames[]>;
+
+  deleteById: FunctionTypeWithPromiseResult<OnlyId, RoundWithGames>;
 }
 
 class RoundModel implements IRoundModel {
@@ -38,6 +39,32 @@ class RoundModel implements IRoundModel {
     });
 
     return round;
+  }
+
+  async getById({ id }: OnlyId) {
+    const round = await this.instance.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        games: true,
+      },
+    });
+
+    return round;
+  }
+
+  async getAllByTournamentId({ id }: OnlyId) {
+    const rounds = await this.instance.findMany({
+      where: {
+        tournamentId: id,
+      },
+      include: {
+        games: true,
+      },
+    });
+
+    return rounds;
   }
 
   async deleteById({ id }: OnlyId) {

@@ -43,6 +43,7 @@ model Tournament {
   tournamentType   TournamentType @relation(fields: [tournamentTypeId], references: [id])
   tournamentTypeId Int
   rounds           Round[]
+  completionStatus Boolean        @default(false)
 }
 
 model Round {
@@ -70,6 +71,7 @@ model Game {
   secondParticipantScore Int[]
   round                  Round?       @relation(fields: [roundId], references: [id])
   roundId                Int?
+  isCompleted            Boolean      @default(false)
 }
 
 model Participant {

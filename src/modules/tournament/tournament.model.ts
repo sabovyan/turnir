@@ -1,51 +1,31 @@
-import { Game, Participant, Prisma, Round, Tournament } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import prisma from '../../lib/prismaClient';
 import {
   FunctionTypeWithPromiseResult,
   OnlyId,
-  OnlyName,
+  TournamentInstance,
   updateDataById,
-} from '../../types/main';
-import { ICreateTournamentData } from './tournament.type';
-
-type getAllResponse = {
-  name: string;
-  goalsToWin: number;
-  winningSets: number;
-  createdAt: Date;
-  rounds: Round[];
-  id: number;
-  tournamentTypeId: number;
-};
+} from '../../types';
+import {
+  ICreateTournamentData,
+  ShrunkTournament,
+  TournamentAllTogether,
+  TournamentWithRounds,
+} from './tournament.type';
 
 export interface ITournamentModel {
   create: FunctionTypeWithPromiseResult<
     ICreateTournamentData,
-    Tournament & {
-      rounds: (Round & {
-        games: (Game & {
-          participant1: Participant | null;
-          participant2: Participant | null;
-        })[];
-      })[];
-    }
+    TournamentAllTogether
   >;
-  getAll: FunctionTypeWithPromiseResult<
-    OnlyId,
-    {
-      id: number;
-      tournamentTypeId: number;
-      name: string;
-      createdAt: Date;
-    }[]
+  getAll: FunctionTypeWithPromiseResult<OnlyId, ShrunkTournament[]>;
+  getById: FunctionTypeWithPromiseResult<OnlyId, TournamentAllTogether | null>;
+  updateById: FunctionTypeWithPromiseResult<
+    updateDataById<any>,
+    TournamentInstance
   >;
-  getById: FunctionTypeWithPromiseResult<OnlyId, Tournament | null>;
-  updateById: FunctionTypeWithPromiseResult<updateDataById<any>, Tournament>;
 
-  deleteById: FunctionTypeWithPromiseResult<
-    OnlyId,
-    Tournament & { rounds: Round[] }
-  >;
+  deleteById: FunctionTypeWithPromiseResult<OnlyId, TournamentWithRounds>;
 }
 
 class TournamentModel implements ITournamentModel {
@@ -109,18 +89,6 @@ class TournamentModel implements ITournamentModel {
         name: true,
         tournamentTypeId: true,
         createdAt: true,
-        // winningSets: true,
-        // goalsToWin: true,
-        // rounds: {
-        //   include: {
-        //     game: {
-        //       include: {
-        //         participant1: true,
-        //         participant2: true,
-        //       },
-        // },
-        // },
-        // },
       },
     });
 

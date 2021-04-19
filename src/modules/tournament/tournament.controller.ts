@@ -1,14 +1,11 @@
 import { Request, Response } from 'express';
 import asyncWrapper from '../../middleware/AsyncWrapper';
-import { IRequest, OnlyName, RequestWithUser } from '../../types/main';
+import { IRequest, OnlyName, RequestWithUser } from '../../types';
 import tournamentService from './tournament.service';
-import { ICreateTournamentRequestBody } from './tournament.type';
+import { ICreateTournament, IUpdateTournamentGame } from './tournament.type';
 
 export const createTournament = asyncWrapper(
-  async (
-    req: IRequest<ICreateTournamentRequestBody>,
-    res: Response,
-  ): Promise<void> => {
+  async (req: IRequest<ICreateTournament>, res: Response): Promise<void> => {
     const data = req.body;
 
     const tournament = await tournamentService.create(data);
@@ -63,5 +60,24 @@ export const deleteTournamentById = asyncWrapper(
     });
 
     res.status(200).json(tournament);
+  },
+);
+
+export const updateTournamentGameScore = asyncWrapper(
+  async (req: IRequest<IUpdateTournamentGame>, res: Response) => {
+    const { id } = req.params;
+    const {
+      firstParticipantScore,
+      secondParticipantScore,
+      tournamentId,
+    } = req.body;
+
+    const gameId = Number(id);
+
+    const updatedGames = await tournamentService.updateGameScoreAndNextGameParticipant(
+      { gameId, firstParticipantScore, secondParticipantScore, tournamentId },
+    );
+
+    res.status(200).json(updatedGames);
   },
 );

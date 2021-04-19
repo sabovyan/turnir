@@ -1,6 +1,6 @@
 import { Participant, Prisma } from '.prisma/client';
 import prisma from '../../lib/prismaClient';
-import { FunctionTypeWithPromiseResult, OnlyId } from '../../types/main';
+import { FunctionTypeWithPromiseResult, OnlyId } from '../../types';
 
 export interface IParticipantModel {
   deleteById: FunctionTypeWithPromiseResult<OnlyId, Participant>;

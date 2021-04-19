@@ -1,5 +1,5 @@
 import { Participant } from '@prisma/client';
-import { FunctionTypeWithPromiseResult, OnlyId } from '../../types/main';
+import { FunctionTypeWithPromiseResult, OnlyId } from '../../types';
 import participantModel, { IParticipantModel } from './participant.model';
 
 export interface IParticipantService {

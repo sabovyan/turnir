@@ -8,6 +8,7 @@ import tournamentRouter from './modules/tournament/tournament.route';
 import playersRouter from './modules/players/players.route';
 import groupRouter from './modules/group/group.route';
 import userRouter from './modules/user/user.route';
+import gameRouter from './modules/game/game.route';
 
 class App {
   app: Application;
@@ -27,6 +28,7 @@ class App {
     this.app.use('/api/players', playersRouter);
     this.app.use('/api/group', groupRouter);
     this.app.use('/api/user', userRouter);
+    this.app.use('/api/game', gameRouter);
     this.app.use(errorHandler);
   }
 

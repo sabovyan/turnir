@@ -1,4 +1,4 @@
-import { OnlyId } from '../../types/main';
+import { OnlyId } from '../../types';
 
 export type UpdateGroupNameRequest = {
   groupId: number;

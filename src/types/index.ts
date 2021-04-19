@@ -1,8 +1,10 @@
+import { Game, Participant, Round, Tournament } from '@prisma/client';
 import { Request } from 'express';
 
-export interface Args<T> {
-  data: T;
-}
+export type GameInstance = Game;
+export type RoundInstance = Round;
+export type TournamentInstance = Tournament;
+export type ParticipantInstance = Participant;
 
 export interface IRequest<T> extends Request {
   body: T;
@@ -31,4 +33,9 @@ export interface RequestWithUser extends Request {
   user?: {
     id: number;
   };
+}
+
+export enum RoundName {
+  final = 'Final',
+  semiFinal = '1/2 Finals',
 }

@@ -1,38 +1,5 @@
 import { Game } from '.prisma/client';
 
-const connectedGames: Game[] = [
-  {
-    id: 30,
-    participant1Id: 46,
-    participant2Id: 45,
-    index: null,
-    thirdPlaceGameId: null,
-    nextGameId: null,
-    score: [],
-    roundId: null,
-  },
-  {
-    id: 31,
-    participant1Id: 47,
-    participant2Id: null,
-    index: null,
-    thirdPlaceGameId: null,
-    nextGameId: null,
-    score: [],
-    roundId: null,
-  },
-  {
-    id: 32,
-    participant1Id: null,
-    participant2Id: null,
-    index: null,
-    thirdPlaceGameId: null,
-    nextGameId: null,
-    score: [],
-    roundId: null,
-  },
-];
-
 export const setupGamesForUpdate = (
   games: Game[],
   _firstRoundGamesQuantity: number,
@@ -79,4 +46,55 @@ export const setupGamesForUpdate = (
   }, []);
 
   return updatedGames;
+};
+
+type IScore = {
+  firstScore: number;
+  secondScore: number;
+};
+
+export const countVictories = (
+  firstScore: number[],
+  secondScore: number[],
+): IScore => {
+  const victories = firstScore.reduce<IScore>(
+    (acc, el, idx) => {
+      if (el > secondScore[idx]) {
+        acc.firstScore += 1;
+        return acc;
+      }
+
+      if (el < secondScore[idx]) {
+        acc.secondScore += 1;
+        return acc;
+      }
+
+      return acc;
+    },
+    { firstScore: 0, secondScore: 0 },
+  );
+
+  return victories;
+};
+
+export const getWinnerAndLooserIds = (
+  game: Game,
+): { winnerId: number | null; looserId: number | null } => {
+  const victoryQuantity = countVictories(
+    game.firstParticipantScore,
+    game.secondParticipantScore,
+  );
+
+  let winnerId: number | null;
+  let looserId: number | null;
+
+  if (victoryQuantity.firstScore > victoryQuantity.secondScore) {
+    winnerId = game.participant1Id;
+    looserId = game.participant2Id;
+  } else {
+    winnerId = game.participant2Id;
+    looserId = game.participant1Id;
+  }
+
+  return { winnerId, looserId };
 };

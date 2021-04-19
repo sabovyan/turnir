@@ -1,6 +1,6 @@
 import { Game } from '@prisma/client';
 
-import { IAdjustedGame, setupGamesArgs, Tree } from './games.types';
+import { IAdjustedParticipantPair, setupGamesArgs, Tree } from './game.types';
 
 export const generateListFromTree = (tree: Tree): Game[] => {
   const arrayOfNode: Tree[] | undefined = [];
@@ -23,45 +23,48 @@ export const generateListFromTree = (tree: Tree): Game[] => {
   return result;
 };
 
-type FnSetupGame = (data: setupGamesArgs) => IAdjustedGame[];
+type FnSetupGame = (data: setupGamesArgs) => IAdjustedParticipantPair[];
 
 export const setupGamesForCreation: FnSetupGame = ({ participants }) => {
-  const adjustedGames = participants.reduce<IAdjustedGame[]>((acc, el) => {
-    const game: IAdjustedGame = {};
+  const adjustedGames = participants.reduce<IAdjustedParticipantPair[]>(
+    (acc, el) => {
+      const game: IAdjustedParticipantPair = {};
 
-    if (el.participant1) {
-      game.participant1 = {
-        create: {
-          name: '',
-          players: {
-            connect: [],
+      if (el.participant1 && el.participant1.name) {
+        game.participant1 = {
+          create: {
+            name: '',
+            players: {
+              connect: [],
+            },
           },
-        },
-      };
+        };
 
-      game.participant1.create.name = el.participant1.name;
-      game.participant1.create.players.connect = el.participant1.players;
-    }
+        game.participant1.create.name = el.participant1.name;
+        game.participant1.create.players.connect = el.participant1.players;
+      }
 
-    if (el.participant2) {
-      game.participant2 = {
-        create: {
-          name: '',
-          players: {
-            connect: [],
+      if (el.participant2 && el.participant2.name) {
+        game.participant2 = {
+          create: {
+            name: '',
+            players: {
+              connect: [],
+            },
           },
-        },
-      };
+        };
 
-      game.participant2.create.name = el.participant2.name;
+        game.participant2.create.name = el.participant2.name;
 
-      game.participant2.create.players.connect = el.participant2.players;
-    }
+        game.participant2.create.players.connect = el.participant2.players;
+      }
 
-    acc.push(game);
+      acc.push(game);
 
-    return acc;
-  }, []);
+      return acc;
+    },
+    [],
+  );
 
   return adjustedGames;
 };
