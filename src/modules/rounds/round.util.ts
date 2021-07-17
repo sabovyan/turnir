@@ -1,13 +1,9 @@
 import { cloneDeep } from 'lodash';
 import BadRequestError from '../../errors/BadRequestError';
-import { GameInstance, RoundInstance, RoundName } from '../../types';
+import { GameInstance, RoundName } from '../../types';
 import getNumberOfRounds from '../../utils/getNumberOfRounds';
 import gameService from '../game/game.service';
-import {
-  IDraftRound,
-  RoundWithGames,
-  RoundWithGamesAndParticipants,
-} from './Round.type';
+import { IDraftRound, RoundWithGames } from './Round.type';
 
 export const getNumberFromName = (name: string): number => {
   const n = name.split(' ')[0].split('/')[1];

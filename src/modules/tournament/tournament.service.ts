@@ -10,7 +10,7 @@ import {
   updateDataById,
 } from '../../types';
 import getAllGamesFromRounds from '../../utils/getAllGamesFromRounds';
-import getParticipantIdsFromGames from '../../utils/getParticipantsfromGames';
+import getParticipantIdsFromGames from '../../utils/getParticipantsFromGames';
 import gameService, { IGameService } from '../game/game.service';
 import participantService, {
   IParticipantService,
@@ -24,11 +24,6 @@ import {
   TournamentAllTogether,
 } from './tournament.type';
 import { getWinnerAndLooserIds } from './tournament.util';
-
-interface UpdatedGameAndNextGAme {
-  updatedGame: GameInstance;
-  nextGame?: GameInstance;
-}
 
 interface ITournamentService {
   create: FunctionTypeWithPromiseResult<
@@ -47,12 +42,16 @@ interface ITournamentService {
 
   updateGameScoreAndNextGameParticipant: FunctionTypeWithPromiseResult<
     IUpdateTournamentGame,
-    UpdatedGameAndNextGAme
+    boolean
   >;
 
   updateCompletionStatus: FunctionTypeWithPromiseResult<
     updateDataById<{ completionStatus: boolean }>,
     TournamentInstance
+  >;
+  updateCompletedNextGame: FunctionTypeWithPromiseResult<
+    { game: GameInstance; pId: number },
+    boolean
   >;
 }
 
@@ -196,38 +195,21 @@ class TournamentService implements ITournamentService {
     });
 
     const { winnerId, looserId } = getWinnerAndLooserIds(updatedGame);
-    if (!winnerId) throw new BadRequestError("participant doesn't exist");
+    if (!winnerId || !looserId)
+      throw new BadRequestError("participant doesn't exist");
 
-    if (updatedGame.nextGameId) {
-      const updatedNextGame = await this.gameService.updateGameParticipant({
-        gameId: updatedGame.nextGameId,
+    if (updatedGame.thirdPlaceGameId) {
+      await this.gameService.updateGameParticipant({
+        gameId: updatedGame.thirdPlaceGameId,
         nextGamePosition: updatedGame.nextGamePosition,
-        participantId: winnerId,
+        participantId: looserId,
       });
-
-      if (updatedGame.thirdPlaceGameId && looserId) {
-        await this.gameService.updateGameParticipant({
-          gameId: updatedGame.thirdPlaceGameId,
-          nextGamePosition: updatedGame.nextGamePosition,
-          participantId: looserId,
-        });
-      }
-
-      /* ANCHOR this part was responsible for updating all games but it must be removed when initial update is fixed  */
-
-      /* start */
-
-      // const rounds = await this.roundService.getAllByTournamentId({
-      //   id: tournamentId,
-      // });
-      // // const isUpdated =
-      // await this.roundService.updateGameParticipants(rounds);
-      // if (!isUpdated) throw new BadRequestError('next Games were not updated');
-
-      /* end */
-
-      return { updatedGame, nextGame: updatedNextGame };
     }
+
+    const g = await this.updateCompletedNextGame({
+      game: updatedGame,
+      pId: winnerId,
+    });
 
     if (!updatedGame.roundId)
       throw new BadRequestError("game doesn't belong to any round");
@@ -251,7 +233,7 @@ class TournamentService implements ITournamentService {
             data: { completionStatus: true },
           });
 
-          return { updatedGame };
+          return g;
         }
 
         const areGamesCompleted = games.every(
@@ -269,7 +251,35 @@ class TournamentService implements ITournamentService {
       }
     }
 
-    return { updatedGame };
+    return g;
+  }
+
+  async updateCompletedNextGame({
+    game,
+    pId,
+  }: {
+    game: GameInstance;
+    pId: number;
+  }): Promise<boolean> {
+    if (!game) {
+      return true;
+    }
+
+    if (!game.isCompleted) {
+      return true;
+    }
+    if (!game.nextGameId) {
+      return true;
+    }
+
+    const updatedNextGame = await this.gameService.updateGameParticipant({
+      gameId: game.nextGameId,
+      nextGamePosition: game.nextGamePosition,
+      participantId: pId,
+    });
+
+    // eslint-disable-next-line no-return-await
+    return await this.updateCompletedNextGame({ game: updatedNextGame, pId });
   }
 
   async updateCompletionStatus(

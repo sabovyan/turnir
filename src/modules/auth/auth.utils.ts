@@ -29,6 +29,7 @@ export const validateFields = (data: UserData): void => {
     throw new ValidationError(`${name} is not valid`);
   }
 };
+
 export const validatePassword = (password: string): void => {
   const { error } = passwordValidateSchema.validate({ password });
   if (error) {
