@@ -19,6 +19,8 @@
     "no-shadow": 0,
     "lines-between-class-members": 0,
     "@typescript-eslint/no-shadow": ["error"],
+    "@typescript-eslint/explicit-module-boundary-types": 0,
+    "no-console": ["error", { "allow": ["warn", "error"] }],
     "prettier/prettier": [
       1,
       {
@@ -48,6 +50,7 @@
   "settings": {
     "import/resolver": {
       "node": {
+        "paths": ["src"],
         "extensions": [".js", ".jsx", ".ts", ".tsx"]
       }
     }

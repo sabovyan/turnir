@@ -1,6 +1,4 @@
 /* eslint-disable camelcase */
-import { User } from '@prisma/client';
-import { MailDataRequired } from '@sendgrid/mail';
 
 export type UserData = {
   displayName: string;

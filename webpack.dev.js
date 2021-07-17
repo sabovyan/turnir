@@ -21,4 +21,10 @@ module.exports = merge(commonConfig, {
     path: path.join(__dirname, 'dev'),
     filename: 'index.js',
   },
+  resolve: {
+    alias: {
+      lib: path.resolve(__dirname, 'src/lib'),
+    },
+    extensions: ['.ts', '.js'],
+  },
 });

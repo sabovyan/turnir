@@ -1,7 +1,7 @@
-import { FAKE_PASS, GOOGLE_CLIENT_ID } from '../../config/envConstants';
+import oAuth2Client from 'lib/googleOAuth';
+import { FAKE_PASS, GOOGLE_CLIENT_ID } from 'config/envConstants';
+import AuthError from 'errors/AuthError';
 
-import AuthError from '../../errors/AuthError';
-import oAuth2Client from '../../lib/googleOAuth';
 import UserModel from '../user/user.model';
 import {
   ISocialAccountLogin,

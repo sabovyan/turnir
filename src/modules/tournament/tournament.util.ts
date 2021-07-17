@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import { Game } from '.prisma/client';
 
 export const setupGamesForUpdate = (

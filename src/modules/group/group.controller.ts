@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import asyncWrapper from '../../middleware/AsyncWrapper';
-import { resetPassword } from '../auth/auth.controller';
 import {
   DisconnectPlayersRequest,
   UpdateManyPlayersOfGroupRequest,

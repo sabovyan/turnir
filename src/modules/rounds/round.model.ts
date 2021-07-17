@@ -1,4 +1,4 @@
-import { Game, Prisma, Round } from '.prisma/client';
+import { Game, Prisma } from '.prisma/client';
 import prisma from '../../lib/prismaClient';
 import { FunctionTypeWithPromiseResult, OnlyId } from '../../types';
 import { RoundWithGames } from './Round.type';

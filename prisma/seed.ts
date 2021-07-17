@@ -4,9 +4,11 @@ import seedTournamentTypes from './seed/seedTournamentTypes';
 
 const prisma = new PrismaClient();
 
-async function main() {
+async function main(withPlayers?: boolean) {
   await seedTournamentTypes(prisma);
-  // await seedPlayers(prisma);
+  if (withPlayers) {
+    await seedPlayers(prisma);
+  }
 }
 
 main()

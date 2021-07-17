@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Algorithm, verify, sign, decode } from 'jsonwebtoken';
 import { JWT_SECRET } from './envConstants';
 

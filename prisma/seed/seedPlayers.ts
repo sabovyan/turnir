@@ -8,7 +8,7 @@ const seedPlayers: (prisma: PrismaClient) => Promise<void> = async (
       id: 2,
     },
     data: {
-      player: {
+      players: {
         create: [
           {
             name: 'Lucy',

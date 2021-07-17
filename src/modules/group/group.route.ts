@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import authenticateUser from '../../middleware/authenticate';
 import {
   addOnePlayerToGroup,
   createNewGroup,

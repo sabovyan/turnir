@@ -1,4 +1,5 @@
-/* eslint-disable class-methods-use-this */
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Player, Group, User } from '@prisma/client';
 import prisma from '../../lib/prismaClient';
 import { UserData } from '../auth/auth.types';
